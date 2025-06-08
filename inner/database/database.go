@@ -1,0 +1,23 @@
+package database
+
+import (
+	"github.com/jmoiron/sqlx"
+	"github.com/nihrom205/idm/inner/common"
+	"time"
+)
+
+// ConnectDb получить конфиг и подключиться с ним к базе данных
+func Connect() *sqlx.DB {
+	cfg := common.GetConfig(".env")
+	return ConnectDbWithCfg(cfg)
+}
+
+// ConnectDbWithCfg подключиться к базе данных с переданным конфигом
+func ConnectDbWithCfg(cfg common.Config) *sqlx.DB {
+	db := sqlx.MustConnect(cfg.DbDriverName, cfg.DSN)
+	db.SetMaxIdleConns(5)
+	db.SetMaxOpenConns(20)
+	db.SetConnMaxLifetime(1 * time.Minute)
+	db.SetConnMaxIdleTime(10 * time.Minute)
+	return db
+}
