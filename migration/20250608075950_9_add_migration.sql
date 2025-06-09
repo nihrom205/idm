@@ -1,13 +1,13 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE employee (
+CREATE TABLE IF NOT EXISTS employee (
     id bigint generated always as IDENTITY primary key not null,
     name text not null ,
     create_at timestamptz default now(),
     update_at timestamptz default now()
 );
 
-CREATE TABLE role (
+CREATE TABLE IF NOT EXISTS role (
     id bigint generated always as IDENTITY primary key not null,
     name text not null unique,
     create_at timestamptz default now(),
