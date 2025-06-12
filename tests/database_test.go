@@ -1,8 +1,9 @@
-package database
+package tests
 
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/nihrom205/idm/inner/common"
+	"github.com/nihrom205/idm/inner/database"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -31,7 +32,7 @@ func TestConnectWithCfgWhenCorrectDSNThenReturnConnect(t *testing.T) {
 	}
 
 	cfg := common.GetConfig(configName)
-	con := ConnectDbWithCfg(cfg)
+	con := database.ConnectDbWithCfg(cfg)
 
 	assert.NotNil(con)
 }
@@ -60,7 +61,7 @@ func TestConnectWithCfgWhenNotCorrectDSNThenReturn(t *testing.T) {
 		}
 	}()
 	cfg := common.GetConfig(configName)
-	con := ConnectDbWithCfg(cfg)
+	con := database.ConnectDbWithCfg(cfg)
 	defer func(con *sqlx.DB) {
 		err = con.Close()
 		if err != nil {
