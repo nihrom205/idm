@@ -16,10 +16,26 @@ const (
 
 func TestGetConfigWhenNotFoundEnvReturnEnvironmentVariable(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv(db_dsn, dsn)
-	os.Setenv(db_driver_name, db_driver)
-	defer os.Unsetenv(db_dsn)
-	defer os.Unsetenv(db_driver_name)
+	err := os.Setenv(db_dsn, dsn)
+	if err != nil {
+		return
+	}
+	err = os.Setenv(db_driver_name, db_driver)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err := os.Unsetenv(db_dsn)
+		if err != nil {
+			return
+		}
+	}()
+	defer func() {
+		err := os.Unsetenv(db_driver_name)
+		if err != nil {
+			return
+		}
+	}()
 
 	got := GetConfig("fakeFile")
 
@@ -30,15 +46,42 @@ func TestGetConfigWhenNotFoundEnvReturnEnvironmentVariable(t *testing.T) {
 
 func TestGetConfigWhenEnvFileNotValuesReturnEmptyStructure(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("VAR_ONE", "VAR_ONE_VALUE")
-	os.Setenv("VAR_TWO", "VAR_TWO_VALUE")
-	defer os.Unsetenv("VAR_ONE")
-	defer os.Unsetenv("VAR_TWO")
+	err := os.Setenv("VAR_ONE", "VAR_ONE_VALUE")
+	if err != nil {
+		return
+	}
+	err = os.Setenv("VAR_TWO", "VAR_TWO_VALUE")
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = os.Unsetenv("VAR_ONE")
+		if err != nil {
+			return
+		}
+	}()
+	defer func() {
+		err = os.Unsetenv("VAR_TWO")
+		if err != nil {
+			return
+		}
+	}()
 
-	os.Create(configName)
-	defer os.Remove(configName)
+	_, err = os.Create(configName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err := os.Remove(configName)
+		if err != nil {
+			return
+		}
+	}()
 
-	os.WriteFile(configName, []byte("PARAM"), 0644)
+	err = os.WriteFile(configName, []byte("PARAM"), 0644)
+	if err != nil {
+		return
+	}
 
 	got := GetConfig(configName)
 
@@ -49,15 +92,42 @@ func TestGetConfigWhenEnvFileNotValuesReturnEmptyStructure(t *testing.T) {
 
 func TestGetConfigWhenEnvFileNotValuesAndCorrectVariableReturnStructure(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv(db_dsn, dsn)
-	os.Setenv(db_driver_name, db_driver)
-	defer os.Unsetenv(db_dsn)
-	defer os.Unsetenv(db_driver_name)
+	err := os.Setenv(db_dsn, dsn)
+	if err != nil {
+		return
+	}
+	err = os.Setenv(db_driver_name, db_driver)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = os.Unsetenv(db_dsn)
+		if err != nil {
+			return
+		}
+	}()
+	defer func() {
+		err = os.Unsetenv(db_driver_name)
+		if err != nil {
+			return
+		}
+	}()
 
-	os.Create(configName)
-	defer os.Remove(configName)
+	_, err = os.Create(configName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = os.Remove(configName)
+		if err != nil {
+			return
+		}
+	}()
 
-	os.WriteFile(configName, []byte("PARAM"), 0644)
+	err = os.WriteFile(configName, []byte("PARAM"), 0644)
+	if err != nil {
+		return
+	}
 
 	got := GetConfig(configName)
 
@@ -68,15 +138,42 @@ func TestGetConfigWhenEnvFileNotValuesAndCorrectVariableReturnStructure(t *testi
 
 func TestGetConfigWhenEnvFileValuesReturnStructure(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv("VAR_ONE", "VAR_ONE_VALUE")
-	os.Setenv("VAR_TWO", "VAR_TWO_VALUE")
-	defer os.Unsetenv("VAR_ONE")
-	defer os.Unsetenv("VAR_TWO")
+	err := os.Setenv("VAR_ONE", "VAR_ONE_VALUE")
+	if err != nil {
+		return
+	}
+	err = os.Setenv("VAR_TWO", "VAR_TWO_VALUE")
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = os.Unsetenv("VAR_ONE")
+		if err != nil {
+			return
+		}
+	}()
+	defer func() {
+		err = os.Unsetenv("VAR_TWO")
+		if err != nil {
+			return
+		}
+	}()
 
-	os.Create(configName)
-	defer os.Remove(configName)
+	_, err = os.Create(configName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = os.Remove(configName)
+		if err != nil {
+			return
+		}
+	}()
 
-	os.WriteFile(configName, []byte("DB_DRIVER_NAME=postgres\nDB_DSN='host=test_url port=5432'\n"), 0644)
+	err = os.WriteFile(configName, []byte("DB_DRIVER_NAME=postgres\nDB_DSN='host=test_url port=5432'\n"), 0644)
+	if err != nil {
+		return
+	}
 
 	got := GetConfig(configName)
 
@@ -87,15 +184,42 @@ func TestGetConfigWhenEnvFileValuesReturnStructure(t *testing.T) {
 
 func TestGetConfigWhenEnvFileEqualsValuesReturnStructure(t *testing.T) {
 	assert := assert.New(t)
-	os.Setenv(db_dsn, dsn)
-	os.Setenv(db_driver_name, db_driver)
-	defer os.Unsetenv(db_dsn)
-	defer os.Unsetenv(db_driver_name)
+	err := os.Setenv(db_dsn, dsn)
+	if err != nil {
+		return
+	}
+	err = os.Setenv(db_driver_name, db_driver)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = os.Unsetenv(db_dsn)
+		if err != nil {
+			return
+		}
+	}()
+	defer func() {
+		err = os.Unsetenv(db_driver_name)
+		if err != nil {
+			return
+		}
+	}()
 
-	os.Create(configName)
-	defer os.Remove(configName)
+	_, err = os.Create(configName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = os.Remove(configName)
+		if err != nil {
+			return
+		}
+	}()
 
-	os.WriteFile(configName, []byte("DB_DRIVER_NAME=mysql\nDB_DSN='host=localhost port=5432'\n"), 0644)
+	err = os.WriteFile(configName, []byte("DB_DRIVER_NAME=mysql\nDB_DSN='host=localhost port=5432'\n"), 0644)
+	if err != nil {
+		return
+	}
 
 	got := GetConfig(configName)
 

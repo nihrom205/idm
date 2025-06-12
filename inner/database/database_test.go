@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/jmoiron/sqlx"
 	"github.com/nihrom205/idm/inner/common"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -13,10 +14,21 @@ const (
 
 func TestConnectWithCfgWhenCorrectDSNThenReturnConnect(t *testing.T) {
 	assert := assert.New(t)
-	os.Create(configName)
-	defer os.Remove(configName)
+	_, err := os.Create(configName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = os.Remove(configName)
+		if err != nil {
+			return
+		}
+	}()
 
-	os.WriteFile(configName, []byte("DB_DRIVER_NAME=postgres\nDB_DSN='host=localhost port=5432 user=user password=user dbname=idm_db sslmode=disable'\n"), 0644)
+	err = os.WriteFile(configName, []byte("DB_DRIVER_NAME=postgres\nDB_DSN='host=localhost port=5432 user=user password=user dbname=idm_db sslmode=disable'\n"), 0644)
+	if err != nil {
+		return
+	}
 
 	cfg := common.GetConfig(configName)
 	con := ConnectDbWithCfg(cfg)
@@ -26,10 +38,21 @@ func TestConnectWithCfgWhenCorrectDSNThenReturnConnect(t *testing.T) {
 
 func TestConnectWithCfgWhenNotCorrectDSNThenReturn(t *testing.T) {
 	assert := assert.New(t)
-	os.Create(configName)
-	defer os.Remove(configName)
+	_, err := os.Create(configName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = os.Remove(configName)
+		if err != nil {
+			return
+		}
+	}()
 
-	os.WriteFile(configName, []byte("DB_DRIVER_NAME=postgres\nDB_DSN='host=localhost port=54321 user=user password=user dbname=idm_db sslmode=disable'\n"), 0644)
+	err = os.WriteFile(configName, []byte("DB_DRIVER_NAME=postgres\nDB_DSN='host=localhost port=54321 user=user password=user dbname=idm_db sslmode=disable'\n"), 0644)
+	if err != nil {
+		return
+	}
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -38,5 +61,10 @@ func TestConnectWithCfgWhenNotCorrectDSNThenReturn(t *testing.T) {
 	}()
 	cfg := common.GetConfig(configName)
 	con := ConnectDbWithCfg(cfg)
-	defer con.Close()
+	defer func(con *sqlx.DB) {
+		err = con.Close()
+		if err != nil {
+			return
+		}
+	}(con)
 }
