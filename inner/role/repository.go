@@ -44,19 +44,16 @@ func (r *RoleRepository) GetAll() (roles []RoleEntity, err error) {
 }
 
 // найти слайс элементов коллекции по слайсу их id
-func (r *RoleRepository) FindByIds(ids []int64) []RoleEntity {
+func (r *RoleRepository) FindByIds(ids []int64) ([]RoleEntity, error) {
 	if len(ids) == 0 {
-		return []RoleEntity{}
+		return []RoleEntity{}, nil
 	}
 
 	query := "SELECT * FROM role WHERE id = ANY($1)"
 
 	var roles []RoleEntity
 	err := r.db.Select(&roles, query, pq.Int64Array(ids))
-	if err != nil {
-		return []RoleEntity{}
-	}
-	return roles
+	return roles, err
 }
 
 // удалить элемент коллекции по его id
@@ -75,8 +72,5 @@ func (r *RoleRepository) DeleteByIds(ids []int64) error {
 	query := "DELETE FROM role WHERE id = ANY($1)"
 
 	_, err := r.db.Exec(query, pq.Int64Array(ids))
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

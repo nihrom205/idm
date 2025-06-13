@@ -47,19 +47,17 @@ func (r *EmployeeRepository) GetAll() (employee []EmployeeEntity, err error) {
 }
 
 // найти слайс элементов коллекции по слайсу их id
-func (r *EmployeeRepository) FindByIds(ids []int64) []EmployeeEntity {
+func (r *EmployeeRepository) FindByIds(ids []int64) ([]EmployeeEntity, error) {
 	if len(ids) == 0 {
-		return []EmployeeEntity{}
+		return []EmployeeEntity{}, nil
 	}
 
 	query := "SELECT * FROM employee WHERE id = ANY($1)"
 
 	var employees []EmployeeEntity
 	err := r.db.Select(&employees, query, pq.Int64Array(ids))
-	if err != nil {
-		return []EmployeeEntity{}
-	}
-	return employees
+
+	return employees, err
 }
 
 // удалить элемент коллекции по его id
@@ -78,8 +76,5 @@ func (r *EmployeeRepository) DeleteByIds(ids []int64) error {
 	query := "DELETE FROM employee WHERE id = ANY($1)"
 
 	_, err := r.db.Exec(query, pq.Int64Array(ids))
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
