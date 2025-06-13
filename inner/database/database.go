@@ -2,6 +2,7 @@ package database
 
 import (
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/nihrom205/idm/inner/common"
 	"time"
 )
