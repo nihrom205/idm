@@ -5,15 +5,15 @@ import (
 )
 
 type FixtureEmployee struct {
-	employee *employee.EmployeeRepository
+	employee *employee.Repository
 }
 
-func NewFixtureEmployee(employee *employee.EmployeeRepository) *FixtureEmployee {
+func NewFixtureEmployee(employee *employee.Repository) *FixtureEmployee {
 	return &FixtureEmployee{employee}
 }
 
 func (f *FixtureEmployee) Employee(name string) int64 {
-	entity := employee.EmployeeEntity{
+	entity := employee.Entity{
 		Name: name,
 	}
 
