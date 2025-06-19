@@ -5,15 +5,15 @@ import (
 )
 
 type FixtureRole struct {
-	role *role.RoleRepository
+	role *role.Repository
 }
 
-func NewFixtureRole(role *role.RoleRepository) *FixtureRole {
+func NewFixtureRole(role *role.Repository) *FixtureRole {
 	return &FixtureRole{role}
 }
 
 func (f *FixtureRole) Role(name string) int64 {
-	entity := role.RoleEntity{
+	entity := role.Entity{
 		Name: name,
 	}
 	newId, err := f.role.Create(entity)
