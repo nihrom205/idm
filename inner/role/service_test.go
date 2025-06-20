@@ -2,6 +2,7 @@ package role
 
 import (
 	"errors"
+	"fmt"
 	"github.com/brianvoe/gofakeit"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -66,13 +67,15 @@ func TestFindById(t *testing.T) {
 		repo := &MockRepo{}
 		srv := NewService(repo)
 		entity := Entity{}
-		want := entity.toResponse()
-		errNotFound := errors.New("sql: no rows in result set")
+		err := errors.New("database error")
 
-		repo.On("FindById", int64(1)).Return(entity, errNotFound)
-		got, err := srv.FindById(1)
+		want := fmt.Errorf("error finding employee with id %d: %w", 1, err)
 
-		a.NotNil(err)
+		repo.On("FindById", int64(1)).Return(entity, err)
+		response, got := srv.FindById(1)
+
+		a.Empty(response)
+		a.NotNil(got)
 		a.Equal(want, got)
 		a.True(repo.AssertNumberOfCalls(t, "FindById", 1))
 	})
@@ -97,13 +100,17 @@ func TestCreate(t *testing.T) {
 	t.Run("should return err", func(t *testing.T) {
 		repo := &MockRepo{}
 		srv := NewService(repo)
-		entity := getEntity()
+		entity := Entity{}
+		err := errors.New("database error")
 
-		repo.On("Create", entity).Return(int64(0), errors.New("fail"))
-		id, err := srv.Create(entity)
+		want := fmt.Errorf("error failed to create employee with id %d: %w", 1, err)
 
-		a.NotNil(err)
-		a.Equal(int64(0), id)
+		repo.On("Create", entity).Return(int64(1), err)
+		response, got := srv.Create(entity)
+
+		a.Empty(response)
+		a.NotNil(got)
+		a.Equal(want, got)
 		a.True(repo.AssertNumberOfCalls(t, "Create", 1))
 	})
 }
@@ -128,12 +135,16 @@ func TestGetAll(t *testing.T) {
 		repo := &MockRepo{}
 		srv := NewService(repo)
 		entities := getSliceEntity(0)
+		err := errors.New("database error")
 
-		repo.On("GetAll").Return(entities, errors.New("not found"))
-		got, err := srv.GetAll()
+		want := fmt.Errorf("error getting all employees: %w", err)
 
-		a.NotNil(err)
-		a.Equal(len(entities), len(got))
+		repo.On("GetAll").Return(entities, err)
+		response, got := srv.GetAll()
+
+		a.Empty(response)
+		a.NotNil(got)
+		a.Equal(want, got)
 		a.True(repo.AssertNumberOfCalls(t, "GetAll", 1))
 	})
 }
@@ -161,13 +172,17 @@ func TestFindByIds(t *testing.T) {
 		srv := NewService(repo)
 		entities := getSliceEntity(0)
 
+		err := errors.New("database error")
+
 		findByIds := []int64{1, 2, 3}
+		want := fmt.Errorf("error finding employee with id %d: %w", findByIds, err)
 
-		repo.On("FindByIds", mock.Anything).Return(entities, errors.New("not found"))
-		got, err := srv.FindByIds(findByIds)
+		repo.On("FindByIds", mock.Anything).Return(entities, err)
+		response, got := srv.FindByIds(findByIds)
 
+		a.Empty(response)
 		a.NotNil(err)
-		a.Equal(len(entities), len(got))
+		a.Equal(want, got)
 		a.True(repo.AssertNumberOfCalls(t, "FindByIds", 1))
 	})
 }
@@ -192,10 +207,15 @@ func TestDeleteById(t *testing.T) {
 		srv := NewService(repo)
 		deleteById := int64(1)
 
-		repo.On("DeleteById", deleteById).Return(errors.New("not found"))
-		err := srv.DeleteById(deleteById)
+		err := errors.New("database error")
+
+		want := fmt.Errorf("error deleting employee with id %d: %w", deleteById, err)
+
+		repo.On("DeleteById", deleteById).Return(err)
+		got := srv.DeleteById(deleteById)
 
 		a.NotNil(err)
+		a.Equal(want, got)
 		a.True(repo.AssertNumberOfCalls(t, "DeleteById", 1))
 	})
 }
@@ -220,10 +240,15 @@ func TestDeleteByIds(t *testing.T) {
 		srv := NewService(repo)
 		deleteByIds := []int64{1, 2, 3}
 
-		repo.On("DeleteByIds", deleteByIds).Return(errors.New("not found"))
-		err := srv.DeleteByIds(deleteByIds)
+		err := errors.New("database error")
+
+		want := fmt.Errorf("error deleting employee with id %d: %w", deleteByIds, err)
+
+		repo.On("DeleteByIds", deleteByIds).Return(err)
+		got := srv.DeleteByIds(deleteByIds)
 
 		a.NotNil(err)
+		a.Equal(want, got)
 		a.True(repo.AssertNumberOfCalls(t, "DeleteByIds", 1))
 	})
 }
