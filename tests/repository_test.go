@@ -150,7 +150,7 @@ func TestRepositoryRole(t *testing.T) {
 
 	fixture := NewFixtureRole(roleRepository)
 
-	t.Run("FindByIds", func(t *testing.T) {
+	t.Run("FindById", func(t *testing.T) {
 		newRoleId := fixture.Role("Director")
 
 		got, err := roleRepository.FindById(newRoleId)
