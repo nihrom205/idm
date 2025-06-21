@@ -16,6 +16,11 @@ func NewEmployeeRepository(db *sqlx.DB) *Repository {
 	}
 }
 
+// запрос транзакции у БД
+func (r *Repository) BeginTransaction() (*sqlx.Tx, error) {
+	return r.db.Beginx()
+}
+
 // добавить новый элемент в коллекцию
 func (r *Repository) Create(employee Entity) (int64, error) {
 	var id int64
@@ -70,4 +75,11 @@ func (r *Repository) DeleteByIds(ids []int64) error {
 
 	_, err := r.db.Exec(query, pq.Int64Array(ids))
 	return err
+}
+
+// поиск сотрудника по имени
+func (r *Repository) FindByName(tx *sqlx.Tx, name string) (isExists bool, err error) {
+	query := "SELECT EXISTS(SELECT * FROM employee WHERE name = $1)"
+	err = tx.Get(&isExists, query, name)
+	return isExists, err
 }
