@@ -43,7 +43,7 @@ func (s *Service) GetAll() ([]Response, error) {
 		return []Response{}, fmt.Errorf("error getting all employees: %w", err)
 	}
 
-	response := make([]Response, len(employees))
+	response := make([]Response, 0, len(employees))
 	for _, item := range employees {
 		response = append(response, item.toResponse())
 	}
@@ -57,7 +57,7 @@ func (s *Service) FindByIds(ids []int64) ([]Response, error) {
 		return []Response{}, fmt.Errorf("error finding employee with id %d: %w", ids, err)
 	}
 
-	response := make([]Response, len(employee))
+	response := make([]Response, 0, len(employee))
 	for _, item := range employee {
 		response = append(response, item.toResponse())
 	}
