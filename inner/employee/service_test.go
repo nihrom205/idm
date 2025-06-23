@@ -1,11 +1,15 @@
 package employee
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/brianvoe/gofakeit"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"regexp"
 	"testing"
 	"time"
 )
@@ -19,7 +23,7 @@ func (m *MockRepo) FindById(id int64) (Entity, error) {
 	return args.Get(0).(Entity), args.Error(1)
 }
 
-func (m *MockRepo) Create(employee Entity) (int64, error) {
+func (m *MockRepo) Create(tx *sqlx.Tx, employee Entity) (int64, error) {
 	args := m.Called(employee)
 	return args.Get(0).(int64), args.Error(1)
 }
@@ -42,6 +46,16 @@ func (m *MockRepo) DeleteById(id int64) error {
 func (m *MockRepo) DeleteByIds(ids []int64) error {
 	args := m.Called(ids)
 	return args.Error(0)
+}
+
+func (m *MockRepo) FindByName(tx *sqlx.Tx, name string) (bool, error) {
+	args := m.Called(tx, name)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockRepo) BeginTransaction() (*sqlx.Tx, error) {
+	args := m.Called()
+	return args.Get(0).(*sqlx.Tx), args.Error(1)
 }
 
 func TestFindById(t *testing.T) {
@@ -78,40 +92,6 @@ func TestFindById(t *testing.T) {
 		a.NotNil(got)
 		a.Equal(want, got)
 		a.True(repo.AssertNumberOfCalls(t, "FindById", 1))
-	})
-}
-
-func TestCreate(t *testing.T) {
-	a := assert.New(t)
-
-	t.Run("should return id", func(t *testing.T) {
-		repo := &MockRepo{}
-		srv := NewService(repo)
-		entity := getEntity()
-
-		repo.On("Create", entity).Return(int64(1), nil)
-		id, err := srv.Create(entity)
-
-		a.Nil(err)
-		a.Equal(int64(1), id)
-		a.True(repo.AssertNumberOfCalls(t, "Create", 1))
-	})
-
-	t.Run("should return err", func(t *testing.T) {
-		repo := &MockRepo{}
-		srv := NewService(repo)
-		entity := Entity{}
-		err := errors.New("database error")
-
-		want := fmt.Errorf("error failed to create employee with id %d: %w", 1, err)
-
-		repo.On("Create", entity).Return(int64(1), err)
-		response, got := srv.Create(entity)
-
-		a.Empty(response)
-		a.NotNil(got)
-		a.Equal(want, got)
-		a.True(repo.AssertNumberOfCalls(t, "Create", 1))
 	})
 }
 
@@ -250,6 +230,183 @@ func TestDeleteByIds(t *testing.T) {
 		a.NotNil(err)
 		a.Equal(want, got)
 		a.True(repo.AssertNumberOfCalls(t, "DeleteByIds", 1))
+	})
+}
+
+func TestCreateIfNotEmployee(t *testing.T) {
+	a := assert.New(t)
+
+	// сохранение сотрудника
+	t.Run("should return id error nil", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		a.NoError(err)
+
+		defer func(db *sql.DB) {
+			err := db.Close()
+			if err != nil {
+				fmt.Printf("error closing db: %v", err)
+			}
+		}(db)
+		sqlxDB := sqlx.NewDb(db, "sqlmock")
+
+		repo := Repository{db: sqlxDB}
+		srv := NewService(&repo)
+		entity := getEntity()
+
+		// Настраиваем mock для начала транзакции
+		mock.ExpectBegin()
+
+		// Настраиваем mock для проверки существования сотрудника
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT EXISTS(SELECT * FROM employee WHERE name = $1)")).
+			WithArgs(entity.Name).
+			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+
+		// Настраиваем mock для создания сотрудника
+		mock.ExpectQuery(regexp.QuoteMeta("INSERT INTO employee (name) VALUES ($1) RETURNING id")).
+			WithArgs(entity.Name).
+			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(entity.Id))
+
+		// Настраиваем mock для коммита транзакции
+		mock.ExpectCommit()
+
+		id, err := srv.Create(entity)
+		a.Nil(err)
+		a.NotNil(id)
+		a.Equal(entity.Id, id)
+	})
+
+	// не сохраняется сотрудник т.к. уже есть с таким именеи
+	t.Run("should return zero error nil", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		a.NoError(err)
+
+		defer func(db *sql.DB) {
+			err := db.Close()
+			if err != nil {
+				fmt.Printf("error closing db: %v", err)
+			}
+		}(db)
+		sqlxDB := sqlx.NewDb(db, "sqlmock")
+
+		repo := &Repository{db: sqlxDB}
+		srv := NewService(repo)
+		entity := getEntity()
+
+		// Настраиваем mock для начала транзакции
+		mock.ExpectBegin()
+
+		// Настраиваем mock для проверки существования сотрудника
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT EXISTS(SELECT * FROM employee WHERE name = $1)")).
+			WithArgs(entity.Name).
+			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
+
+		// Настраиваем mock для коммита транзакции
+		mock.ExpectCommit()
+
+		id, err := srv.Create(entity)
+		a.Nil(err)
+		a.NotNil(id)
+		a.Equal(int64(0), id)
+	})
+
+	// работника с таким именем нет в базе данных, но создание нового работника завершилось ошибкой
+	t.Run("should return error", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf("An error occurred while creating mock: %s", err)
+		}
+		defer func(db *sql.DB) {
+			err := db.Close()
+			if err != nil {
+				fmt.Printf("error closing db: %v", err)
+			}
+		}(db)
+		sqlxDB := sqlx.NewDb(db, "sqlmock")
+		repo := &Repository{db: sqlxDB}
+		srv := NewService(repo)
+		entity := getEntity()
+
+		mock.ExpectBegin()
+
+		// Настраиваем mock для проверки существования сотрудника
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT EXISTS(SELECT * FROM employee WHERE name = $1)")).
+			WithArgs(entity.Name).
+			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+
+		// Настраиваем mock для создания сотрудника
+		mock.ExpectQuery(regexp.QuoteMeta("INSERT INTO employee (name) VALUES ($1) RETURNING id")).
+			WithArgs(entity.Name).
+			WillReturnError(errors.New("error insert failed"))
+
+		id, err := srv.Create(entity)
+		a.Equal(int64(0), id)
+		a.NotNil(err)
+		a.ErrorContains(err, "error insert failed")
+	})
+
+	// не удалось создать транзакцию
+	t.Run("should return error tx", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf("failed to open sqlmock database: %v", err)
+		}
+		defer func(db *sql.DB) {
+			err := db.Close()
+			if err != nil {
+				fmt.Printf("error closing db: %v", err)
+			}
+		}(db)
+		sqlxDB := sqlx.NewDb(db, "sqlmock")
+		repo := &Repository{db: sqlxDB}
+		service := &Service{repo: repo}
+		defer func(sqlxDB *sqlx.DB) {
+			err := sqlxDB.Close()
+			if err != nil {
+				fmt.Printf("error closing db: %v", err)
+			}
+		}(sqlxDB)
+
+		mock.ExpectBegin().WillReturnError(fmt.Errorf("error create tx"))
+
+		_, err = service.Create(getEntity())
+		a.NotNil(err)
+		a.ErrorContains(err, "error create tx")
+	})
+
+	// ошибка при проверке наличия работника с таким именем
+	t.Run("should return error", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf("failed to open sqlmock database: %v", err)
+		}
+		defer func(db *sql.DB) {
+			err := db.Close()
+			if err != nil {
+				fmt.Printf("error closing db: %v", err)
+			}
+		}(db)
+		sqlxDB := sqlx.NewDb(db, "sqlmock")
+		repo := &Repository{db: sqlxDB}
+		service := &Service{repo: repo}
+		defer func(sqlxDB *sqlx.DB) {
+			err := sqlxDB.Close()
+			if err != nil {
+				fmt.Printf("error closing db: %v", err)
+			}
+		}(sqlxDB)
+		entity := getEntity()
+
+		mock.ExpectBegin()
+
+		// Настраиваем mock для проверки существования сотрудника
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT EXISTS(SELECT * FROM employee WHERE name = $1)")).
+			WithArgs(entity.Name).
+			WillReturnError(errors.New("error find failed"))
+
+		id, err := service.Create(entity)
+		a.Equal(int64(0), id)
+		a.NotNil(err)
+		a.ErrorContains(err, "error find failed")
 	})
 }
 

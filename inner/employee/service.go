@@ -6,7 +6,7 @@ import (
 )
 
 type Repo interface {
-	Create(employee Entity) (int64, error)
+	Create(tx *sqlx.Tx, employee Entity) (int64, error)
 	FindById(id int64) (Entity, error)
 	GetAll() (employee []Entity, err error)
 	FindByIds(ids []int64) ([]Entity, error)
@@ -36,9 +36,11 @@ func (s *Service) Create(employee Entity) (int64, error) {
 			}
 		} else if err != nil {
 			// если произошла другая ошибка (не паника), то откатываем транзакцию
-			errTx := tx.Rollback()
-			if errTx != nil {
-				err = fmt.Errorf("creating employee: rolling back transaction errors: %w, %w", err, errTx)
+			if tx != nil {
+				errTx := tx.Rollback()
+				if errTx != nil {
+					err = fmt.Errorf("creating employee: rolling back transaction errors: %w, %w", err, errTx)
+				}
 			}
 		} else {
 			// если ошибок нет, то коммитим транзакцию
@@ -61,7 +63,7 @@ func (s *Service) Create(employee Entity) (int64, error) {
 
 	var id int64
 	if !isExists {
-		id, err = s.repo.Create(employee)
+		id, err = s.repo.Create(tx, employee)
 	}
 	if err != nil {
 		return 0, fmt.Errorf("error failed to create employee with id %d: %w", id, err)

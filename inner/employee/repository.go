@@ -22,11 +22,10 @@ func (r *Repository) BeginTransaction() (*sqlx.Tx, error) {
 }
 
 // добавить новый элемент в коллекцию
-func (r *Repository) Create(employee Entity) (int64, error) {
+func (r *Repository) Create(tx *sqlx.Tx, employee Entity) (int64, error) {
 	var id int64
 	query := "INSERT INTO employee (name) VALUES ($1) RETURNING id"
-	err := r.db.QueryRow(query, employee.Name).
-		Scan(&id)
+	err := tx.QueryRow(query, employee.Name).Scan(&id)
 	return id, err
 }
 

@@ -3,6 +3,7 @@ module github.com/nihrom205/idm
 go 1.24.4
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2 // indirect
 	github.com/brianvoe/gofakeit v3.18.0+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
