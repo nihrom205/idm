@@ -133,6 +133,31 @@ func TestRepositoryEmployee(t *testing.T) {
 		a.Equal(got[0].Name, "Pavel")
 		clearDatabaseEmployee(db)
 	})
+
+	t.Run("BeginTransaction", func(t *testing.T) {
+		//_ = fixture.Employee("Ivan")
+		employeeName := "Ivan"
+
+		//delIds := []int64{ivanId, vadimId}
+		tx, err := employeeRepository.BeginTransaction()
+		a.Nil(err)
+		var isExists bool
+		query := "SELECT EXISTS(SELECT * FROM employee WHERE name = $1)"
+		err = tx.Get(&isExists, query, employeeName)
+		a.Nil(err)
+		a.False(isExists)
+
+		query = "INSERT INTO employee (name) VALUES ($1) RETURNING id"
+		var id int64
+		err = tx.QueryRow(query, employeeName).Scan(&id)
+		a.Nil(err)
+		a.NotEqual(int64(0), id)
+		err = tx.Commit()
+		if err != nil {
+			return
+		}
+		clearDatabaseEmployee(db)
+	})
 }
 
 func TestRepositoryRole(t *testing.T) {

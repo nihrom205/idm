@@ -17,7 +17,18 @@ func (f *FixtureEmployee) Employee(name string) int64 {
 		Name: name,
 	}
 
-	newId, err := f.employee.Create(entity)
+	tx, err := f.employee.BeginTransaction()
+	if err != nil {
+		panic(err)
+	}
+	newId, err := f.employee.Create(tx, entity)
+	if err != nil {
+		panic(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		return 0
+	}
 	if err != nil {
 		panic(err)
 	}

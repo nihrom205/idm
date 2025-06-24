@@ -1,6 +1,7 @@
 package employee
 
 import (
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -17,7 +18,7 @@ func (s *StubRepo) FindById(id int64) (Entity, error) {
 	}, nil
 }
 
-func (s *StubRepo) Create(employee Entity) (int64, error) {
+func (s *StubRepo) Create(tx *sqlx.Tx, employee Entity) (int64, error) {
 	return 0, nil
 }
 
@@ -35,6 +36,14 @@ func (s *StubRepo) DeleteById(id int64) error {
 
 func (s *StubRepo) DeleteByIds(ids []int64) error {
 	return nil
+}
+
+func (s *StubRepo) FindByName(tx *sqlx.Tx, name string) (bool, error) {
+	return false, nil
+}
+
+func (s *StubRepo) BeginTransaction() (*sqlx.Tx, error) {
+	return nil, nil
 }
 
 func TestStubFindById(t *testing.T) {
