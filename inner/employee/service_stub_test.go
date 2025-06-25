@@ -18,7 +18,7 @@ func (s *StubRepo) FindById(id int64) (Entity, error) {
 	}, nil
 }
 
-func (s *StubRepo) Create(tx *sqlx.Tx, employee Entity) (int64, error) {
+func (s *StubRepo) CreateTx(tx *sqlx.Tx, employee Entity) (int64, error) {
 	return 0, nil
 }
 
@@ -51,7 +51,7 @@ func TestStubFindById(t *testing.T) {
 
 	t.Run("should return found employee", func(t *testing.T) {
 		repo := &StubRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 
 		got, err := srv.FindById(1)
 

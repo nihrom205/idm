@@ -89,12 +89,12 @@ func TestCreate(t *testing.T) {
 		srv := NewService(repo)
 		entity := getEntity()
 
-		repo.On("Create", entity).Return(int64(1), nil)
+		repo.On("CreateTx", entity).Return(int64(1), nil)
 		id, err := srv.Create(entity)
 
 		a.Nil(err)
 		a.Equal(int64(1), id)
-		a.True(repo.AssertNumberOfCalls(t, "Create", 1))
+		a.True(repo.AssertNumberOfCalls(t, "CreateTx", 1))
 	})
 
 	t.Run("should return err", func(t *testing.T) {
@@ -105,13 +105,13 @@ func TestCreate(t *testing.T) {
 
 		want := fmt.Errorf("error failed to create employee with id %d: %w", 1, err)
 
-		repo.On("Create", entity).Return(int64(1), err)
+		repo.On("CreateTx", entity).Return(int64(1), err)
 		response, got := srv.Create(entity)
 
 		a.Empty(response)
 		a.NotNil(got)
 		a.Equal(want, got)
-		a.True(repo.AssertNumberOfCalls(t, "Create", 1))
+		a.True(repo.AssertNumberOfCalls(t, "CreateTx", 1))
 	})
 }
 

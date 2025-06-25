@@ -21,7 +21,7 @@ func (f *FixtureEmployee) Employee(name string) int64 {
 	if err != nil {
 		panic(err)
 	}
-	newId, err := f.employee.Create(tx, entity)
+	newId, err := f.employee.CreateTx(tx, entity)
 	if err != nil {
 		panic(err)
 	}

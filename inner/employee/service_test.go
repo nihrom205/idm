@@ -23,7 +23,7 @@ func (m *MockRepo) FindById(id int64) (Entity, error) {
 	return args.Get(0).(Entity), args.Error(1)
 }
 
-func (m *MockRepo) Create(tx *sqlx.Tx, employee Entity) (int64, error) {
+func (m *MockRepo) CreateTx(tx *sqlx.Tx, employee Entity) (int64, error) {
 	args := m.Called(employee)
 	return args.Get(0).(int64), args.Error(1)
 }
@@ -63,7 +63,7 @@ func TestFindById(t *testing.T) {
 
 	t.Run("should return found employee", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entity := getEntity()
 		want := entity.toResponse()
 
@@ -79,7 +79,7 @@ func TestFindById(t *testing.T) {
 
 	t.Run("should return empty employee and err", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entity := Entity{}
 		err := errors.New("database error")
 
@@ -100,7 +100,7 @@ func TestGetAll(t *testing.T) {
 
 	t.Run("should return all employees", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entities := getSliceEntity(4)
 
 		repo.On("GetAll").Return(entities, nil)
@@ -113,7 +113,7 @@ func TestGetAll(t *testing.T) {
 
 	t.Run("should return empty employees", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entities := getSliceEntity(0)
 		err := errors.New("database error")
 
@@ -134,7 +134,7 @@ func TestFindByIds(t *testing.T) {
 
 	t.Run("should return employees", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entities := getSliceEntity(3)
 
 		findByIds := []int64{entities[0].Id, entities[1].Id, entities[2].Id}
@@ -149,7 +149,7 @@ func TestFindByIds(t *testing.T) {
 
 	t.Run("should return empty employee", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entities := getSliceEntity(0)
 
 		err := errors.New("database error")
@@ -172,7 +172,7 @@ func TestDeleteById(t *testing.T) {
 
 	t.Run("should return error nil", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		deleteById := int64(1)
 
 		repo.On("DeleteById", deleteById).Return(nil)
@@ -184,7 +184,7 @@ func TestDeleteById(t *testing.T) {
 
 	t.Run("should return error", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		deleteById := int64(1)
 
 		err := errors.New("database error")
@@ -205,7 +205,7 @@ func TestDeleteByIds(t *testing.T) {
 
 	t.Run("should return error nil", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		deleteByIds := []int64{1, 2, 3}
 
 		repo.On("DeleteByIds", deleteByIds).Return(nil)
@@ -217,7 +217,7 @@ func TestDeleteByIds(t *testing.T) {
 
 	t.Run("should return error nil", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		deleteByIds := []int64{1, 2, 3}
 
 		err := errors.New("database error")
@@ -250,7 +250,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		sqlxDB := sqlx.NewDb(db, "sqlmock")
 
 		repo := Repository{db: sqlxDB}
-		srv := NewService(&repo)
+		srv := NewService(&repo, nil)
 		entity := getEntity()
 
 		// Настраиваем mock для начала транзакции
@@ -269,7 +269,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		// Настраиваем mock для коммита транзакции
 		mock.ExpectCommit()
 
-		id, err := srv.Create(entity)
+		id, err := srv.Create(CreateRequest{Name: entity.Name})
 		a.Nil(err)
 		a.NotNil(id)
 		a.Equal(entity.Id, id)
@@ -289,7 +289,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		sqlxDB := sqlx.NewDb(db, "sqlmock")
 
 		repo := &Repository{db: sqlxDB}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entity := getEntity()
 
 		// Настраиваем mock для начала транзакции
@@ -303,7 +303,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		// Настраиваем mock для коммита транзакции
 		mock.ExpectCommit()
 
-		id, err := srv.Create(entity)
+		id, err := srv.Create(CreateRequest{Name: entity.Name})
 		a.Nil(err)
 		a.NotNil(id)
 		a.Equal(int64(0), id)
@@ -323,7 +323,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		}(db)
 		sqlxDB := sqlx.NewDb(db, "sqlmock")
 		repo := &Repository{db: sqlxDB}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entity := getEntity()
 
 		mock.ExpectBegin()
@@ -338,7 +338,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 			WithArgs(entity.Name).
 			WillReturnError(errors.New("error insert failed"))
 
-		id, err := srv.Create(entity)
+		id, err := srv.Create(CreateRequest{Name: entity.Name})
 		a.Equal(int64(0), id)
 		a.NotNil(err)
 		a.ErrorContains(err, "error insert failed")
@@ -368,7 +368,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 
 		mock.ExpectBegin().WillReturnError(fmt.Errorf("error create tx"))
 
-		_, err = service.Create(getEntity())
+		_, err = service.Create(CreateRequest{Name: getEntity().Name})
 		a.NotNil(err)
 		a.ErrorContains(err, "error create tx")
 	})
@@ -403,7 +403,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 			WithArgs(entity.Name).
 			WillReturnError(errors.New("error find failed"))
 
-		id, err := service.Create(entity)
+		id, err := service.Create(CreateRequest{Name: entity.Name})
 		a.Equal(int64(0), id)
 		a.NotNil(err)
 		a.ErrorContains(err, "error find failed")
