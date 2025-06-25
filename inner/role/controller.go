@@ -1,4 +1,4 @@
-package employee
+package role
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 )
 
 type Controller struct {
-	server          *web.Server
-	employeeService Svc
+	server      *web.Server
+	roleService Svc
 }
 
 // интерфейс сервиса employee.Service
@@ -25,22 +25,22 @@ type Svc interface {
 
 func NewController(server *web.Server, svc Svc) *Controller {
 	return &Controller{
-		server:          server,
-		employeeService: svc,
+		server:      server,
+		roleService: svc,
 	}
 }
 
 func (c *Controller) RegisterRoutes() {
-	c.server.GroupApiV1.Post("/employees", c.CreateEmployee)
-	c.server.GroupApiV1.Get("/employees/:id", c.GetEmployee)
-	c.server.GroupApiV1.Get("/employees", c.GetAllEmployees)
-	c.server.GroupApiV1.Post("/employees/ids", c.GetEmployeeByIds)
-	c.server.GroupApiV1.Delete("/employees/:id", c.DeleteEmployee)
-	c.server.GroupApiV1.Delete("/employees/ids", c.DeleteEmployeesByIds)
+	c.server.GroupApiV1.Post("/roles", c.CreateRole)
+	c.server.GroupApiV1.Get("/roles/:id", c.GetRole)
+	c.server.GroupApiV1.Get("/roles", c.GetAllRoles)
+	c.server.GroupApiV1.Post("/roles/ids", c.GetRoleByIds)
+	c.server.GroupApiV1.Delete("/roles/:id", c.DeleteRole)
+	c.server.GroupApiV1.Delete("/roles/ids", c.DeleteRolesByIds)
 }
 
-// функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/employees"
-func (c *Controller) CreateEmployee(ctx fiber.Ctx) error {
+// функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/role"
+func (c *Controller) CreateRole(ctx fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру CreateRequest
 	var request CreateRequest
@@ -48,8 +48,8 @@ func (c *Controller) CreateEmployee(ctx fiber.Ctx) error {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
 
-	// вызываем метод Create сервиса employee.Service
-	newEmployeeId, err := c.employeeService.Create(request)
+	// вызываем метод Create сервиса role.Service
+	newEmployeeId, err := c.roleService.Create(request)
 	if err != nil {
 		switch {
 		// если сервис возвращает ошибку RequestValidationError или AlreadyExistsError,
@@ -71,8 +71,8 @@ func (c *Controller) CreateEmployee(ctx fiber.Ctx) error {
 	return nil
 }
 
-// функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/employees/:id"
-func (c *Controller) GetEmployee(ctx fiber.Ctx) error {
+// функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/roles/:id"
+func (c *Controller) GetRole(ctx fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -81,8 +81,8 @@ func (c *Controller) GetEmployee(ctx fiber.Ctx) error {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid employee id")
 	}
 
-	// вызываем метод FindById сервиса employee.Service
-	response, err := c.employeeService.FindById(id)
+	// вызываем метод FindById сервиса role.Service
+	response, err := c.roleService.FindById(id)
 	if err != nil {
 		switch {
 		case errors.As(err, &common.RequestValidatorError{}):
@@ -103,11 +103,11 @@ func (c *Controller) GetEmployee(ctx fiber.Ctx) error {
 	return nil
 }
 
-// функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/employees"
-func (c *Controller) GetAllEmployees(ctx fiber.Ctx) error {
+// функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/roles"
+func (c *Controller) GetAllRoles(ctx fiber.Ctx) error {
 
-	// вызываем метод GetAll сервиса employee.Service
-	response, err := c.employeeService.GetAll()
+	// вызываем метод GetAll сервиса role.Service
+	response, err := c.roleService.GetAll()
 	if err != nil {
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
@@ -119,8 +119,8 @@ func (c *Controller) GetAllEmployees(ctx fiber.Ctx) error {
 	return nil
 }
 
-// функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/employees/ids"
-func (c *Controller) GetEmployeeByIds(ctx fiber.Ctx) error {
+// функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/roles/ids"
+func (c *Controller) GetRoleByIds(ctx fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру FindByIdsRequest
 	var request FindByIdsRequest
@@ -128,8 +128,8 @@ func (c *Controller) GetEmployeeByIds(ctx fiber.Ctx) error {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
 
-	// вызываем метод FindByIds сервиса employee.Service
-	response, err := c.employeeService.FindByIds(request.Ids)
+	// вызываем метод FindByIds сервиса role.Service
+	response, err := c.roleService.FindByIds(request.Ids)
 	if err != nil {
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
@@ -141,8 +141,8 @@ func (c *Controller) GetEmployeeByIds(ctx fiber.Ctx) error {
 	return nil
 }
 
-// функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/employees/:id"
-func (c *Controller) DeleteEmployee(ctx fiber.Ctx) error {
+// функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/roles/:id"
+func (c *Controller) DeleteRole(ctx fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -151,8 +151,8 @@ func (c *Controller) DeleteEmployee(ctx fiber.Ctx) error {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid employee id")
 	}
 
-	// вызываем метод DeleteById сервиса employee.Service
-	err = c.employeeService.DeleteById(id)
+	// вызываем метод DeleteById сервиса role.Service
+	err = c.roleService.DeleteById(id)
 	if err != nil {
 		switch {
 		case errors.As(err, &common.RequestValidatorError{}):
@@ -171,8 +171,8 @@ func (c *Controller) DeleteEmployee(ctx fiber.Ctx) error {
 	return nil
 }
 
-// функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/employees/ids"
-func (c *Controller) DeleteEmployeesByIds(ctx fiber.Ctx) error {
+// функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/roles/ids"
+func (c *Controller) DeleteRolesByIds(ctx fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру DeleteByIdsRequest
 	var request DeleteByIdsRequest
@@ -180,8 +180,8 @@ func (c *Controller) DeleteEmployeesByIds(ctx fiber.Ctx) error {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
 
-	// вызываем метод DeleteByIds сервиса employee.Service
-	err := c.employeeService.DeleteByIds(request.Ids)
+	// вызываем метод DeleteByIds сервиса role.Service
+	err := c.roleService.DeleteByIds(request.Ids)
 	if err != nil {
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
