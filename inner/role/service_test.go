@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/brianvoe/gofakeit"
+	"github.com/nihrom205/idm/inner/common/validator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -86,32 +87,31 @@ func TestCreate(t *testing.T) {
 
 	t.Run("should return id", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo, nil)
+		srv := NewService(repo, validator.NewValidator())
 		entity := getEntity()
+		request := CreateRequest{Name: entity.Name}
 
-		repo.On("CreateTx", entity).Return(int64(1), nil)
-		id, err := srv.Create(CreateRequest{Name: entity.Name})
+		repo.On("Create", request.ToEntity()).Return(int64(1), nil)
+		id, err := srv.Create(request)
 
 		a.Nil(err)
 		a.Equal(int64(1), id)
-		a.True(repo.AssertNumberOfCalls(t, "CreateTx", 1))
+		a.True(repo.AssertNumberOfCalls(t, "Create", 1))
 	})
 
 	t.Run("should return err", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo, nil)
+		srv := NewService(repo, validator.NewValidator())
 		entity := Entity{}
+		request := CreateRequest{Name: entity.Name}
 		err := errors.New("database error")
 
-		want := fmt.Errorf("error failed to create employee with id %d: %w", 1, err)
-
-		repo.On("CreateTx", entity).Return(int64(1), err)
-		response, got := srv.Create(CreateRequest{Name: entity.Name})
+		repo.On("Create", request.ToEntity()).Return(int64(1), err)
+		response, got := srv.Create(request)
 
 		a.Empty(response)
 		a.NotNil(got)
-		a.Equal(want, got)
-		a.True(repo.AssertNumberOfCalls(t, "CreateTx", 1))
+		a.True(repo.AssertNumberOfCalls(t, "Create", 0))
 	})
 }
 
@@ -254,9 +254,10 @@ func TestDeleteByIds(t *testing.T) {
 }
 
 func getEntity() Entity {
+	roles := []string{"admin", "user", "manager", "guest"}
 	return Entity{
 		Id:       gofakeit.Int64(),
-		Name:     gofakeit.Name(),
+		Name:     gofakeit.RandString(roles),
 		CreateAt: time.Now(),
 		UpdateAt: time.Now(),
 	}

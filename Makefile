@@ -10,6 +10,9 @@ buildLinux:
 test:
 	go test -v ./...
 
+test-inner:
+	go test -v ./inner/...
+
 install-lint:
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
 

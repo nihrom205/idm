@@ -1,12 +1,12 @@
 package employee
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/brianvoe/gofakeit"
 	"github.com/jmoiron/sqlx"
+	"github.com/nihrom205/idm/inner/common/validator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"regexp"
@@ -241,16 +241,10 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		a.NoError(err)
 
-		defer func(db *sql.DB) {
-			err := db.Close()
-			if err != nil {
-				fmt.Printf("error closing db: %v", err)
-			}
-		}(db)
 		sqlxDB := sqlx.NewDb(db, "sqlmock")
 
 		repo := Repository{db: sqlxDB}
-		srv := NewService(&repo, nil)
+		srv := NewService(&repo, validator.NewValidator())
 		entity := getEntity()
 
 		// Настраиваем mock для начала транзакции
@@ -280,16 +274,10 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		a.NoError(err)
 
-		defer func(db *sql.DB) {
-			err := db.Close()
-			if err != nil {
-				fmt.Printf("error closing db: %v", err)
-			}
-		}(db)
 		sqlxDB := sqlx.NewDb(db, "sqlmock")
 
 		repo := &Repository{db: sqlxDB}
-		srv := NewService(repo, nil)
+		srv := NewService(repo, validator.NewValidator())
 		entity := getEntity()
 
 		// Настраиваем mock для начала транзакции
@@ -304,26 +292,20 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		mock.ExpectCommit()
 
 		id, err := srv.Create(CreateRequest{Name: entity.Name})
-		a.Nil(err)
+		a.NotNil(err)
 		a.NotNil(id)
 		a.Equal(int64(0), id)
 	})
 
 	// работника с таким именем нет в базе данных, но создание нового работника завершилось ошибкой
-	t.Run("should return error", func(t *testing.T) {
+	t.Run("should return error_1", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
 			t.Fatalf("An error occurred while creating mock: %s", err)
 		}
-		defer func(db *sql.DB) {
-			err := db.Close()
-			if err != nil {
-				fmt.Printf("error closing db: %v", err)
-			}
-		}(db)
 		sqlxDB := sqlx.NewDb(db, "sqlmock")
 		repo := &Repository{db: sqlxDB}
-		srv := NewService(repo, nil)
+		srv := NewService(repo, validator.NewValidator())
 		entity := getEntity()
 
 		mock.ExpectBegin()
@@ -345,26 +327,14 @@ func TestCreateIfNotEmployee(t *testing.T) {
 	})
 
 	// не удалось создать транзакцию
-	t.Run("should return error tx", func(t *testing.T) {
+	t.Run("should return error_2", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
 			t.Fatalf("failed to open sqlmock database: %v", err)
 		}
-		defer func(db *sql.DB) {
-			err := db.Close()
-			if err != nil {
-				fmt.Printf("error closing db: %v", err)
-			}
-		}(db)
 		sqlxDB := sqlx.NewDb(db, "sqlmock")
 		repo := &Repository{db: sqlxDB}
-		service := &Service{repo: repo}
-		defer func(sqlxDB *sqlx.DB) {
-			err := sqlxDB.Close()
-			if err != nil {
-				fmt.Printf("error closing db: %v", err)
-			}
-		}(sqlxDB)
+		service := NewService(repo, validator.NewValidator())
 
 		mock.ExpectBegin().WillReturnError(fmt.Errorf("error create tx"))
 
@@ -374,26 +344,14 @@ func TestCreateIfNotEmployee(t *testing.T) {
 	})
 
 	// ошибка при проверке наличия работника с таким именем
-	t.Run("should return error", func(t *testing.T) {
+	t.Run("should return error_3", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
 			t.Fatalf("failed to open sqlmock database: %v", err)
 		}
-		defer func(db *sql.DB) {
-			err := db.Close()
-			if err != nil {
-				fmt.Printf("error closing db: %v", err)
-			}
-		}(db)
 		sqlxDB := sqlx.NewDb(db, "sqlmock")
 		repo := &Repository{db: sqlxDB}
-		service := &Service{repo: repo}
-		defer func(sqlxDB *sqlx.DB) {
-			err := sqlxDB.Close()
-			if err != nil {
-				fmt.Printf("error closing db: %v", err)
-			}
-		}(sqlxDB)
+		service := NewService(repo, validator.NewValidator())
 		entity := getEntity()
 
 		mock.ExpectBegin()
