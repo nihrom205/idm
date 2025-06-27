@@ -1,6 +1,9 @@
 package role
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/nihrom205/idm/inner/common"
+)
 
 type Repo interface {
 	Create(role Entity) (int64, error)
@@ -11,16 +14,31 @@ type Repo interface {
 	DeleteByIds(ids []int64) error
 }
 
+type Validator interface {
+	Validate(request any) error
+}
+
 type Service struct {
-	repo Repo
+	repo      Repo
+	validator Validator
 }
 
-func NewService(repo Repo) *Service {
-	return &Service{repo: repo}
+func NewService(repo Repo, validator Validator) *Service {
+	return &Service{
+		repo:      repo,
+		validator: validator,
+	}
 }
 
-func (s *Service) Create(role Entity) (int64, error) {
-	id, err := s.repo.Create(role)
+func (s *Service) Create(request CreateRequest) (int64, error) {
+
+	// валидируем запрос
+	err := s.validator.Validate(request)
+	if err != nil {
+		// возвращаем кастомную ошибку в случае, если запрос не прошёл валидацию
+		return 0, common.RequestValidatorError{Message: err.Error()}
+	}
+	id, err := s.repo.Create(request.ToEntity())
 	if err != nil {
 		return 0, fmt.Errorf("error failed to create employee with id %d: %w", id, err)
 	}

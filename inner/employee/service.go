@@ -3,10 +3,11 @@ package employee
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/nihrom205/idm/inner/common"
 )
 
 type Repo interface {
-	Create(tx *sqlx.Tx, employee Entity) (int64, error)
+	CreateTx(tx *sqlx.Tx, employee Entity) (int64, error)
 	FindById(id int64) (Entity, error)
 	GetAll() (employee []Entity, err error)
 	FindByIds(ids []int64) ([]Entity, error)
@@ -16,16 +17,35 @@ type Repo interface {
 	BeginTransaction() (*sqlx.Tx, error)
 }
 
+type Validator interface {
+	Validate(request any) error
+}
+
 type Service struct {
-	repo Repo
+	repo      Repo
+	validator Validator
 }
 
-func NewService(repo Repo) *Service {
-	return &Service{repo: repo}
+func NewService(repo Repo, validator Validator) *Service {
+	return &Service{
+		repo:      repo,
+		validator: validator,
+	}
 }
 
-func (s *Service) Create(employee Entity) (int64, error) {
+// Метод для создания нового сотрудника
+// принимает на вход CreateRequest - структура запроса на создание сотрудника
+func (s *Service) Create(request CreateRequest) (int64, error) {
+
+	// валидируем запрос
+	err := s.validator.Validate(request)
+	if err != nil {
+		// возвращаем кастомную ошибку в случае, если запрос не прошёл валидацию
+		return 0, common.RequestValidatorError{Message: err.Error()}
+	}
+
 	tx, err := s.repo.BeginTransaction()
+
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("creating employee panic: %v", r)
@@ -55,21 +75,23 @@ func (s *Service) Create(employee Entity) (int64, error) {
 		return int64(0), fmt.Errorf("error creating transaction: %w", err)
 	}
 
-	// выполняем несколько запросов в базе данных
-	isExists, err := s.repo.FindByName(tx, employee.Name)
+	// в рамках транзакции проверяем наличие в базе данных работника с таким же именем
+	isExist, err := s.repo.FindByName(tx, request.Name)
 	if err != nil {
-		return 0, fmt.Errorf("error  %w", err)
+		return 0, fmt.Errorf("error finding employee by name: %s, %w", request.Name, err)
+	}
+	if isExist {
+		return 0, common.AlreadyExistsError{Message: fmt.Sprintf("employee with name %s already exists", request.Name)}
 	}
 
-	var id int64
-	if !isExists {
-		id, err = s.repo.Create(tx, employee)
-	}
+	// в случае отсутствия сотрудника с таким же именем - в рамках этой же транзакции вызываем метод репозитория,
+	// который должен будет создать нового сотрудника
+	newEmployeeId, err := s.repo.CreateTx(tx, request.ToEntity())
 	if err != nil {
-		return 0, fmt.Errorf("error failed to create employee with id %d: %w", id, err)
+		return 0, fmt.Errorf("error failed to create employee with id %d: %w", newEmployeeId, err)
 	}
 
-	return id, nil
+	return newEmployeeId, nil
 }
 
 func (s *Service) FindById(id int64) (Response, error) {

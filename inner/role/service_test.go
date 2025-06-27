@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/brianvoe/gofakeit"
+	"github.com/nihrom205/idm/inner/common/validator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -49,7 +50,7 @@ func TestFindById(t *testing.T) {
 
 	t.Run("should return found employee", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entity := getEntity()
 		want := entity.toResponse()
 
@@ -65,7 +66,7 @@ func TestFindById(t *testing.T) {
 
 	t.Run("should return empty employee and err", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entity := Entity{}
 		err := errors.New("database error")
 
@@ -86,11 +87,12 @@ func TestCreate(t *testing.T) {
 
 	t.Run("should return id", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, validator.NewValidator())
 		entity := getEntity()
+		request := CreateRequest{Name: entity.Name}
 
-		repo.On("Create", entity).Return(int64(1), nil)
-		id, err := srv.Create(entity)
+		repo.On("Create", request.ToEntity()).Return(int64(1), nil)
+		id, err := srv.Create(request)
 
 		a.Nil(err)
 		a.Equal(int64(1), id)
@@ -99,19 +101,17 @@ func TestCreate(t *testing.T) {
 
 	t.Run("should return err", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, validator.NewValidator())
 		entity := Entity{}
+		request := CreateRequest{Name: entity.Name}
 		err := errors.New("database error")
 
-		want := fmt.Errorf("error failed to create employee with id %d: %w", 1, err)
-
-		repo.On("Create", entity).Return(int64(1), err)
-		response, got := srv.Create(entity)
+		repo.On("Create", request.ToEntity()).Return(int64(1), err)
+		response, got := srv.Create(request)
 
 		a.Empty(response)
 		a.NotNil(got)
-		a.Equal(want, got)
-		a.True(repo.AssertNumberOfCalls(t, "Create", 1))
+		a.True(repo.AssertNumberOfCalls(t, "Create", 0))
 	})
 }
 
@@ -120,7 +120,7 @@ func TestGetAll(t *testing.T) {
 
 	t.Run("should return all employees", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entities := getSliceEntity(4)
 
 		repo.On("GetAll").Return(entities, nil)
@@ -133,7 +133,7 @@ func TestGetAll(t *testing.T) {
 
 	t.Run("should return empty employees", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entities := getSliceEntity(0)
 		err := errors.New("database error")
 
@@ -154,7 +154,7 @@ func TestFindByIds(t *testing.T) {
 
 	t.Run("should return employees", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entities := getSliceEntity(3)
 
 		findByIds := []int64{entities[0].Id, entities[1].Id, entities[2].Id}
@@ -169,7 +169,7 @@ func TestFindByIds(t *testing.T) {
 
 	t.Run("should return empty employee", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		entities := getSliceEntity(0)
 
 		err := errors.New("database error")
@@ -192,7 +192,7 @@ func TestDeleteById(t *testing.T) {
 
 	t.Run("should return error nil", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		deleteById := int64(1)
 
 		repo.On("DeleteById", deleteById).Return(nil)
@@ -204,7 +204,7 @@ func TestDeleteById(t *testing.T) {
 
 	t.Run("should return error", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		deleteById := int64(1)
 
 		err := errors.New("database error")
@@ -225,7 +225,7 @@ func TestDeleteByIds(t *testing.T) {
 
 	t.Run("should return error nil", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		deleteByIds := []int64{1, 2, 3}
 
 		repo.On("DeleteByIds", deleteByIds).Return(nil)
@@ -237,7 +237,7 @@ func TestDeleteByIds(t *testing.T) {
 
 	t.Run("should return error nil", func(t *testing.T) {
 		repo := &MockRepo{}
-		srv := NewService(repo)
+		srv := NewService(repo, nil)
 		deleteByIds := []int64{1, 2, 3}
 
 		err := errors.New("database error")
@@ -254,9 +254,10 @@ func TestDeleteByIds(t *testing.T) {
 }
 
 func getEntity() Entity {
+	roles := []string{"admin", "user", "manager", "guest"}
 	return Entity{
 		Id:       gofakeit.Int64(),
-		Name:     gofakeit.Name(),
+		Name:     gofakeit.RandString(roles),
 		CreateAt: time.Now(),
 		UpdateAt: time.Now(),
 	}
