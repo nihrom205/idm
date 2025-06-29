@@ -35,8 +35,8 @@ func (c *Controller) RegisterRoutes() {
 	c.server.GroupApiV1.Get("/employees/:id", c.GetEmployee)
 	c.server.GroupApiV1.Get("/employees", c.GetAllEmployees)
 	c.server.GroupApiV1.Post("/employees/ids", c.GetEmployeeByIds)
-	c.server.GroupApiV1.Delete("/employees/:id", c.DeleteEmployee)
 	c.server.GroupApiV1.Delete("/employees/ids", c.DeleteEmployeesByIds)
+	c.server.GroupApiV1.Delete("/employees/:id", c.DeleteEmployee)
 }
 
 // функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/employees"
@@ -176,6 +176,7 @@ func (c *Controller) DeleteEmployeesByIds(ctx fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру DeleteByIdsRequest
 	var request DeleteByIdsRequest
+	//fmt.Print(ctx.Bind().Body(request))
 	if err := ctx.Bind().Body(&request); err != nil {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}

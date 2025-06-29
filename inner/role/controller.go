@@ -35,8 +35,8 @@ func (c *Controller) RegisterRoutes() {
 	c.server.GroupApiV1.Get("/roles/:id", c.GetRole)
 	c.server.GroupApiV1.Get("/roles", c.GetAllRoles)
 	c.server.GroupApiV1.Post("/roles/ids", c.GetRoleByIds)
-	c.server.GroupApiV1.Delete("/roles/:id", c.DeleteRole)
 	c.server.GroupApiV1.Delete("/roles/ids", c.DeleteRolesByIds)
+	c.server.GroupApiV1.Delete("/roles/:id", c.DeleteRole)
 }
 
 // функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/role"
