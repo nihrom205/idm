@@ -59,13 +59,18 @@ func TestName(t *testing.T) {
 		req := httptest.NewRequest(fiber.MethodGet, "/internal/info", nil)
 		resp, err := app.Test(req)
 		a.Nil(err)
-		defer resp.Body.Close()
 
 		a.Equal(fiber.StatusOK, resp.StatusCode)
 
 		var responseBody InfoResponse
 		bytesData, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatal("Failed to read response body")
+		}
 		err = json.Unmarshal(bytesData, &responseBody)
+		if err != nil {
+			t.Fatal("Failed to unmarshal response body")
+		}
 
 		a.Equal("test_app", responseBody.Name)
 		a.Equal("0.0.1", responseBody.Version)
@@ -81,7 +86,6 @@ func TestGetHealth(t *testing.T) {
 		req := httptest.NewRequest(fiber.MethodGet, "/internal/health", nil)
 		resp, err := app.Test(req)
 		a.Nil(err)
-		defer resp.Body.Close()
 		a.Equal(fiber.StatusOK, resp.StatusCode)
 
 		//body := make([]byte, 1024)
@@ -101,7 +105,6 @@ func TestGetHealth(t *testing.T) {
 		req := httptest.NewRequest(fiber.MethodGet, "/internal/health", nil)
 		resp, err := app.Test(req)
 		a.Nil(err)
-		defer resp.Body.Close()
 		a.Equal(fiber.StatusInternalServerError, resp.StatusCode)
 
 		body := make([]byte, 1024)
@@ -113,7 +116,13 @@ func TestGetHealth(t *testing.T) {
 
 		var errResponse common.Response[string]
 		bytesData, err := io.ReadAll(strings.NewReader(responseBody))
+		if err != nil {
+			t.Fatal("Failed to read response body")
+		}
 		err = json.Unmarshal(bytesData, &errResponse)
+		if err != nil {
+			t.Fatal("Failed to unmarshal response body")
+		}
 		a.False(errResponse.Success)
 		a.Equal("Database connection failed", errResponse.Message)
 
