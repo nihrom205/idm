@@ -1,0 +1,122 @@
+package info
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"github.com/gofiber/fiber/v3"
+	"github.com/nihrom205/idm/inner/common"
+	"github.com/nihrom205/idm/inner/web"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"io"
+	"net/http/httptest"
+	"strings"
+	"testing"
+)
+
+// MockDatabase - мок для интерфейса Database
+type MockDatabase struct {
+	mock.Mock
+}
+
+// Реализует интерфейс Database
+func (m *MockDatabase) PingContext(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
+}
+
+// setupTest инициализирует тестовое окружение
+func setupTest(t *testing.T) (*fiber.App, *MockDatabase) {
+	// Готовим тестовое окружение
+	server := web.NewServer()
+	cfg := common.Config{
+		DbDriverName: "postgres",
+		DSN:          "test_dsn",
+		AppName:      "test_app",
+		AppVersion:   "0.0.1",
+	}
+	mock := &MockDatabase{}
+	controller := NewController(server, cfg, mock)
+
+	if controller == nil {
+		t.Fatal("Failed to create controller")
+	}
+
+	if server.GroupInternal == nil {
+		t.Fatal("GroupInternal is nil")
+	}
+
+	controller.RegisterRouters()
+	return server.App, mock
+}
+
+func TestName(t *testing.T) {
+	var a = assert.New(t)
+	app, _ := setupTest(t)
+
+	t.Run("Success", func(t *testing.T) {
+		req := httptest.NewRequest(fiber.MethodGet, "/internal/info", nil)
+		resp, err := app.Test(req)
+		a.Nil(err)
+		defer resp.Body.Close()
+
+		a.Equal(fiber.StatusOK, resp.StatusCode)
+
+		var responseBody InfoResponse
+		bytesData, err := io.ReadAll(resp.Body)
+		err = json.Unmarshal(bytesData, &responseBody)
+
+		a.Equal("test_app", responseBody.Name)
+		a.Equal("0.0.1", responseBody.Version)
+	})
+}
+func TestGetHealth(t *testing.T) {
+	var a = assert.New(t)
+	app, mockDB := setupTest(t)
+
+	t.Run("Success - Database available", func(t *testing.T) {
+		mockDB.On("PingContext", mock.Anything).Return(nil)
+
+		req := httptest.NewRequest(fiber.MethodGet, "/internal/health", nil)
+		resp, err := app.Test(req)
+		a.Nil(err)
+		defer resp.Body.Close()
+		a.Equal(fiber.StatusOK, resp.StatusCode)
+
+		//body := make([]byte, 1024)
+		//n, err := resp.Body.Read(body)
+		//if err != nil && err.Error() != "EOF" {
+		//	t.Fatalf("Failed to read response body: %v", err)
+		//}
+		//responseBody := string(body[:n])
+		//a.Equal(fiber.StatusOK, resp.StatusCode)
+		//a.Equal("OK", responseBody)
+		mockDB.AssertCalled(t, "PingContext", mock.Anything)
+	})
+
+	t.Run("Success - Database unavailable", func(t *testing.T) {
+		mockDB.On("PingContext", mock.Anything).Return(errors.New("database connection failed"))
+
+		req := httptest.NewRequest(fiber.MethodGet, "/internal/health", nil)
+		resp, err := app.Test(req)
+		a.Nil(err)
+		defer resp.Body.Close()
+		a.Equal(fiber.StatusInternalServerError, resp.StatusCode)
+
+		body := make([]byte, 1024)
+		n, err := resp.Body.Read(body)
+		if err != nil && err.Error() != "EOF" {
+			t.Fatalf("Failed to read response body: %v", err)
+		}
+		responseBody := string(body[:n])
+
+		var errResponse common.Response[string]
+		bytesData, err := io.ReadAll(strings.NewReader(responseBody))
+		err = json.Unmarshal(bytesData, &errResponse)
+		a.False(errResponse.Success)
+		a.Equal("Database connection failed", errResponse.Message)
+
+		mockDB.AssertCalled(t, "PingContext", mock.Anything)
+	})
+}
