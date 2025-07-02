@@ -5,7 +5,6 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/web"
-	"time"
 )
 
 type Database interface {
@@ -53,8 +52,9 @@ func (c *Controller) GetInfo(ctx fiber.Ctx) error {
 // GetHealth проверка работоспособности приложения
 func (c *Controller) GetHealth(ctx fiber.Ctx) error {
 	// Создаем контекст с таймаутом для проверки БД
-	dbCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	//dbCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	//defer cancel()
+	dbCtx := context.Background()
 
 	// проверка к подключению БД
 	if err := c.db.PingContext(dbCtx); err != nil {

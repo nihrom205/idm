@@ -115,11 +115,18 @@ func TestGetConfigWhenEnvFileNotValuesReturnEmptyStructure(t *testing.T) {
 		return
 	}
 
-	got := GetConfig(configName)
+	//_ = GetConfig(configName)
+	assert.Panics(func() {
+		GetConfig(configName)
+	})
+	//assert.PanicsWithValue(t, func() {
+	//
+	//	GetConfig(configName)
+	//})
 
-	assert.NotNil(got)
-	assert.Equal(got.DSN, "")
-	assert.Equal(got.DbDriverName, "")
+	//assert.NotNil(got)
+	//assert.Equal(got.DSN, "")
+	//assert.Equal(got.DbDriverName, "")
 }
 
 func TestGetConfigWhenEnvFileNotValuesAndCorrectVariableReturnStructure(t *testing.T) {

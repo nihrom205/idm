@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"io"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -53,9 +52,9 @@ func setupTest(t *testing.T) (*fiber.App, *MockDatabase) {
 
 func TestName(t *testing.T) {
 	var a = assert.New(t)
-	app, _ := setupTest(t)
 
 	t.Run("Success", func(t *testing.T) {
+		app, _ := setupTest(t)
 		req := httptest.NewRequest(fiber.MethodGet, "/internal/info", nil)
 		resp, err := app.Test(req)
 		a.Nil(err)
@@ -78,9 +77,9 @@ func TestName(t *testing.T) {
 }
 func TestGetHealth(t *testing.T) {
 	var a = assert.New(t)
-	app, mockDB := setupTest(t)
 
 	t.Run("Success - Database available", func(t *testing.T) {
+		app, mockDB := setupTest(t)
 		mockDB.On("PingContext", mock.Anything).Return(nil)
 
 		req := httptest.NewRequest(fiber.MethodGet, "/internal/health", nil)
@@ -88,18 +87,11 @@ func TestGetHealth(t *testing.T) {
 		a.Nil(err)
 		a.Equal(fiber.StatusOK, resp.StatusCode)
 
-		//body := make([]byte, 1024)
-		//n, err := resp.Body.Read(body)
-		//if err != nil && err.Error() != "EOF" {
-		//	t.Fatalf("Failed to read response body: %v", err)
-		//}
-		//responseBody := string(body[:n])
-		//a.Equal(fiber.StatusOK, resp.StatusCode)
-		//a.Equal("OK", responseBody)
 		mockDB.AssertCalled(t, "PingContext", mock.Anything)
 	})
 
 	t.Run("Success - Database unavailable", func(t *testing.T) {
+		app, mockDB := setupTest(t)
 		mockDB.On("PingContext", mock.Anything).Return(errors.New("database connection failed"))
 
 		req := httptest.NewRequest(fiber.MethodGet, "/internal/health", nil)
@@ -107,15 +99,8 @@ func TestGetHealth(t *testing.T) {
 		a.Nil(err)
 		a.Equal(fiber.StatusInternalServerError, resp.StatusCode)
 
-		body := make([]byte, 1024)
-		n, err := resp.Body.Read(body)
-		if err != nil && err.Error() != "EOF" {
-			t.Fatalf("Failed to read response body: %v", err)
-		}
-		responseBody := string(body[:n])
-
+		bytesData, err := io.ReadAll(resp.Body)
 		var errResponse common.Response[string]
-		bytesData, err := io.ReadAll(strings.NewReader(responseBody))
 		if err != nil {
 			t.Fatal("Failed to read response body")
 		}
