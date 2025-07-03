@@ -7,11 +7,15 @@ import (
 )
 
 const (
-	configName     = ".env_test"
-	db_dsn         = "DB_DSN"
-	dsn            = "host=test_url port=5432"
-	db_driver_name = "DB_DRIVER_NAME"
-	db_driver      = "postgres"
+	configName        = ".env_test"
+	db_dsn            = "DB_DSN"
+	dsn               = "host=test_url port=5432"
+	db_driver_name    = "DB_DRIVER_NAME"
+	db_driver         = "postgres"
+	app_name          = "APP_NAME"
+	app_name_value    = "test_idm"
+	app_version       = "APP_VERSION"
+	app_version_value = "0.0.1"
 )
 
 func TestGetConfigWhenNotFoundEnvReturnEnvironmentVariable(t *testing.T) {
@@ -21,6 +25,14 @@ func TestGetConfigWhenNotFoundEnvReturnEnvironmentVariable(t *testing.T) {
 		return
 	}
 	err = os.Setenv(db_driver_name, db_driver)
+	if err != nil {
+		return
+	}
+	err = os.Setenv(app_name, app_name_value)
+	if err != nil {
+		return
+	}
+	err = os.Setenv(app_version, app_version_value)
 	if err != nil {
 		return
 	}
@@ -54,6 +66,14 @@ func TestGetConfigWhenEnvFileNotValuesReturnEmptyStructure(t *testing.T) {
 	if err != nil {
 		return
 	}
+	err = os.Setenv("VAR_THREE", "VAR_THREE_VALUE")
+	if err != nil {
+		return
+	}
+	err = os.Setenv("VAR_FOUR", "VAR_FOUR_VALUE")
+	if err != nil {
+		return
+	}
 	defer func() {
 		err = os.Unsetenv("VAR_ONE")
 		if err != nil {
@@ -62,6 +82,18 @@ func TestGetConfigWhenEnvFileNotValuesReturnEmptyStructure(t *testing.T) {
 	}()
 	defer func() {
 		err = os.Unsetenv("VAR_TWO")
+		if err != nil {
+			return
+		}
+	}()
+	defer func() {
+		err = os.Unsetenv("VAR_THREE")
+		if err != nil {
+			return
+		}
+	}()
+	defer func() {
+		err = os.Unsetenv("VAR_FOUR")
 		if err != nil {
 			return
 		}
@@ -83,11 +115,18 @@ func TestGetConfigWhenEnvFileNotValuesReturnEmptyStructure(t *testing.T) {
 		return
 	}
 
-	got := GetConfig(configName)
+	//_ = GetConfig(configName)
+	assert.Panics(func() {
+		GetConfig(configName)
+	})
+	//assert.PanicsWithValue(t, func() {
+	//
+	//	GetConfig(configName)
+	//})
 
-	assert.NotNil(got)
-	assert.Equal(got.DSN, "")
-	assert.Equal(got.DbDriverName, "")
+	//assert.NotNil(got)
+	//assert.Equal(got.DSN, "")
+	//assert.Equal(got.DbDriverName, "")
 }
 
 func TestGetConfigWhenEnvFileNotValuesAndCorrectVariableReturnStructure(t *testing.T) {
