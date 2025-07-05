@@ -8,6 +8,7 @@ import (
 	"github.com/nihrom205/idm/inner/web"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -54,13 +55,17 @@ func (svc *MockService) DeleteByIds(ids []int64) error {
 
 func TestController_CreateEmployee(t *testing.T) {
 	var a = assert.New(t)
+	// Создаем тестовый логгер
+	logger := &common.Logger{
+		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
+	}
 
 	// тестируем положительный сценарий: работника создали и получили его id
 	t.Run("should return created employee id", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -92,7 +97,7 @@ func TestController_CreateEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -125,7 +130,7 @@ func TestController_CreateEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -158,7 +163,7 @@ func TestController_CreateEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -190,7 +195,7 @@ func TestController_CreateEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -221,12 +226,16 @@ func TestController_CreateEmployee(t *testing.T) {
 
 func TestController_GetEmployee(t *testing.T) {
 	var a = assert.New(t)
+	// Создаем тестовый логгер
+	logger := &common.Logger{
+		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
+	}
 
 	t.Run("should return employee", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -264,7 +273,7 @@ func TestController_GetEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -291,7 +300,7 @@ func TestController_GetEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -321,7 +330,7 @@ func TestController_GetEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -351,7 +360,7 @@ func TestController_GetEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -381,7 +390,7 @@ func TestController_GetEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -410,12 +419,16 @@ func TestController_GetEmployee(t *testing.T) {
 
 func TestController_GetAllEmployees(t *testing.T) {
 	var a = assert.New(t)
+	// Создаем тестовый логгер
+	logger := &common.Logger{
+		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
+	}
 
 	t.Run("should success get all employees", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -461,7 +474,7 @@ func TestController_GetAllEmployees(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -493,12 +506,16 @@ func TestController_GetAllEmployees(t *testing.T) {
 
 func TestController_GetEmployeeByIds(t *testing.T) {
 	var a = assert.New(t)
+	// Создаем тестовый логгер
+	logger := &common.Logger{
+		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
+	}
 
 	t.Run("should success get all employees by ids", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -545,7 +562,7 @@ func TestController_GetEmployeeByIds(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -578,12 +595,16 @@ func TestController_GetEmployeeByIds(t *testing.T) {
 
 func TestController_DeleteEmployee(t *testing.T) {
 	var a = assert.New(t)
+	// Создаем тестовый логгер
+	logger := &common.Logger{
+		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
+	}
 
 	t.Run("should success del by id", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -613,7 +634,7 @@ func TestController_DeleteEmployee(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -639,12 +660,16 @@ func TestController_DeleteEmployee(t *testing.T) {
 
 func TestController_DeleteEmployeesByIds(t *testing.T) {
 	var a = assert.New(t)
+	// Создаем тестовый логгер
+	logger := &common.Logger{
+		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
+	}
 
 	t.Run("should success del by ids", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -675,7 +700,7 @@ func TestController_DeleteEmployeesByIds(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение
@@ -703,7 +728,7 @@ func TestController_DeleteEmployeesByIds(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
 		svc := &MockService{}
-		controller := NewController(server, svc)
+		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
 
 		// Готовим тестовое окружение

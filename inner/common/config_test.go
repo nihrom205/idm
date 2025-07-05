@@ -36,6 +36,14 @@ func TestGetConfigWhenNotFoundEnvReturnEnvironmentVariable(t *testing.T) {
 	if err != nil {
 		return
 	}
+	err = os.Setenv("LOG_LEVEL", "INFO")
+	if err != nil {
+		return
+	}
+	err = os.Setenv("LOG_DEVELOP_MODE", "true")
+	if err != nil {
+		return
+	}
 	defer func() {
 		err := os.Unsetenv(db_dsn)
 		if err != nil {
