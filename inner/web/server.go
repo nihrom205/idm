@@ -14,11 +14,13 @@ func NewServer() *Server {
 	// создаём новый веб-вервер
 	app := fiber.New()
 
+	// подключаем middleware
+	registerMiddleware(app)
+
 	groupInternal := app.Group("/internal")
 
 	groupApi := app.Group("/api")
 
-	// создаём подгруппу "api/v1"
 	groupApiV1 := groupApi.Group("/v1")
 
 	return &Server{
