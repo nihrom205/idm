@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"github.com/jmoiron/sqlx"
 	"github.com/nihrom205/idm/inner/database"
 	"github.com/nihrom205/idm/inner/employee"
@@ -55,7 +56,7 @@ func TestRepositoryEmployee(t *testing.T) {
 	t.Run("FindByIds", func(t *testing.T) {
 		newEmployeeId := fixture.Employee("TestName")
 
-		got, err := employeeRepository.FindById(newEmployeeId)
+		got, err := employeeRepository.FindById(context.Background(), newEmployeeId)
 		a.Nil(err)
 		a.NotEmpty(got)
 		a.NotEmpty(got.Id)
@@ -69,7 +70,7 @@ func TestRepositoryEmployee(t *testing.T) {
 		employeeIvanId := fixture.Employee("Ivan")
 		employeeVadimId := fixture.Employee("Vadim")
 
-		got, err := employeeRepository.GetAll()
+		got, err := employeeRepository.GetAll(context.Background())
 		a.Nil(err)
 		a.NotEmpty(got)
 		a.Equal(2, len(got))
@@ -88,7 +89,7 @@ func TestRepositoryEmployee(t *testing.T) {
 		_ = fixture.Employee("Pavel")
 
 		ids := []int64{ivanId, vadimId}
-		got, err := employeeRepository.FindByIds(ids)
+		got, err := employeeRepository.FindByIds(context.Background(), ids)
 		a.Nil(err)
 		a.NotEmpty(got)
 		a.Equal(2, len(got))
@@ -104,10 +105,10 @@ func TestRepositoryEmployee(t *testing.T) {
 	t.Run("DeleteEmployeeById", func(t *testing.T) {
 		ivanId := fixture.Employee("Ivan")
 
-		err := employeeRepository.DeleteById(ivanId)
+		err := employeeRepository.DeleteById(context.Background(), ivanId)
 		a.Nil(err)
 
-		_, err = employeeRepository.FindById(ivanId)
+		_, err = employeeRepository.FindById(context.Background(), ivanId)
 		a.NotNil(err)
 		a.Equal(err.Error(), "sql: no rows in result set")
 
@@ -120,11 +121,11 @@ func TestRepositoryEmployee(t *testing.T) {
 		pavelId := fixture.Employee("Pavel")
 
 		delIds := []int64{ivanId, vadimId}
-		err := employeeRepository.DeleteByIds(delIds)
+		err := employeeRepository.DeleteByIds(context.Background(), delIds)
 		a.Nil(err)
 
 		findIds := []int64{pavelId, vadimId, pavelId}
-		got, err := employeeRepository.FindByIds(findIds)
+		got, err := employeeRepository.FindByIds(context.Background(), findIds)
 		a.Nil(err)
 		a.NotEmpty(got)
 		a.Equal(1, len(got))
@@ -178,7 +179,7 @@ func TestRepositoryRole(t *testing.T) {
 	t.Run("FindById", func(t *testing.T) {
 		newRoleId := fixture.Role("Director")
 
-		got, err := roleRepository.FindById(newRoleId)
+		got, err := roleRepository.FindById(context.Background(), newRoleId)
 		a.Nil(err)
 		a.NotEmpty(got)
 		a.NotEmpty(got.Id)
@@ -192,7 +193,7 @@ func TestRepositoryRole(t *testing.T) {
 		managerId := fixture.Role("Manager")
 		dirId := fixture.Role("Director")
 
-		got, err := roleRepository.GetAll()
+		got, err := roleRepository.GetAll(context.Background())
 		a.Nil(err)
 		a.NotEmpty(got)
 		a.Equal(2, len(got))
@@ -211,7 +212,7 @@ func TestRepositoryRole(t *testing.T) {
 		_ = fixture.Role("Driver")
 
 		ids := []int64{managerId, dirId}
-		got, err := roleRepository.FindByIds(ids)
+		got, err := roleRepository.FindByIds(context.Background(), ids)
 		a.Nil(err)
 		a.NotEmpty(got)
 		a.Equal(2, len(got))
@@ -227,10 +228,10 @@ func TestRepositoryRole(t *testing.T) {
 	t.Run("DeleteEmployeeById", func(t *testing.T) {
 		managerId := fixture.Role("Manager")
 
-		err := roleRepository.DeleteById(managerId)
+		err := roleRepository.DeleteById(context.Background(), managerId)
 		a.Nil(err)
 
-		_, err = roleRepository.FindById(managerId)
+		_, err = roleRepository.FindById(context.Background(), managerId)
 		a.NotNil(err)
 		a.Equal(err.Error(), "sql: no rows in result set")
 
@@ -243,11 +244,11 @@ func TestRepositoryRole(t *testing.T) {
 		driverId := fixture.Role("Driver")
 
 		delIds := []int64{managerId, dirId}
-		err := roleRepository.DeleteByIds(delIds)
+		err := roleRepository.DeleteByIds(context.Background(), delIds)
 		a.Nil(err)
 
 		findIds := []int64{managerId, dirId, driverId}
-		got, err := roleRepository.FindByIds(findIds)
+		got, err := roleRepository.FindByIds(context.Background(), findIds)
 		a.Nil(err)
 		a.NotEmpty(got)
 		a.Equal(1, len(got))

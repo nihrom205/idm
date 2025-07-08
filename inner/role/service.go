@@ -1,17 +1,18 @@
 package role
 
 import (
+	"context"
 	"fmt"
 	"github.com/nihrom205/idm/inner/common"
 )
 
 type Repo interface {
-	Create(role Entity) (int64, error)
-	FindById(id int64) (Entity, error)
-	GetAll() (role []Entity, err error)
-	FindByIds(ids []int64) ([]Entity, error)
-	DeleteById(id int64) error
-	DeleteByIds(ids []int64) error
+	Create(ctx context.Context, role Entity) (int64, error)
+	FindById(ctx context.Context, id int64) (Entity, error)
+	GetAll(ctx context.Context) (role []Entity, err error)
+	FindByIds(ctx context.Context, ids []int64) ([]Entity, error)
+	DeleteById(ctx context.Context, id int64) error
+	DeleteByIds(ctx context.Context, ids []int64) error
 }
 
 type Validator interface {
@@ -30,7 +31,7 @@ func NewService(repo Repo, validator Validator) *Service {
 	}
 }
 
-func (s *Service) Create(request CreateRequest) (int64, error) {
+func (s *Service) Create(ctx context.Context, request CreateRequest) (int64, error) {
 
 	// валидируем запрос
 	err := s.validator.Validate(request)
@@ -38,15 +39,15 @@ func (s *Service) Create(request CreateRequest) (int64, error) {
 		// возвращаем кастомную ошибку в случае, если запрос не прошёл валидацию
 		return 0, common.RequestValidatorError{Message: err.Error()}
 	}
-	id, err := s.repo.Create(request.ToEntity())
+	id, err := s.repo.Create(ctx, request.ToEntity())
 	if err != nil {
 		return 0, fmt.Errorf("error failed to create employee with id %d: %w", id, err)
 	}
 	return id, nil
 }
 
-func (s *Service) FindById(id int64) (Response, error) {
-	role, err := s.repo.FindById(id)
+func (s *Service) FindById(ctx context.Context, id int64) (Response, error) {
+	role, err := s.repo.FindById(ctx, id)
 	if err != nil {
 		return Response{}, fmt.Errorf("error finding employee with id %d: %w", id, err)
 	}
@@ -54,8 +55,8 @@ func (s *Service) FindById(id int64) (Response, error) {
 	return role.toResponse(), nil
 }
 
-func (s *Service) GetAll() ([]Response, error) {
-	roles, err := s.repo.GetAll()
+func (s *Service) GetAll(ctx context.Context) ([]Response, error) {
+	roles, err := s.repo.GetAll(ctx)
 	if err != nil {
 		return []Response{}, fmt.Errorf("error getting all employees: %w", err)
 	}
@@ -68,8 +69,8 @@ func (s *Service) GetAll() ([]Response, error) {
 	return response, nil
 }
 
-func (s *Service) FindByIds(ids []int64) ([]Response, error) {
-	roles, err := s.repo.FindByIds(ids)
+func (s *Service) FindByIds(ctx context.Context, ids []int64) ([]Response, error) {
+	roles, err := s.repo.FindByIds(ctx, ids)
 	if err != nil {
 		return []Response{}, fmt.Errorf("error finding employee with id %d: %w", ids, err)
 	}
@@ -82,8 +83,8 @@ func (s *Service) FindByIds(ids []int64) ([]Response, error) {
 	return response, nil
 }
 
-func (s *Service) DeleteById(id int64) error {
-	err := s.repo.DeleteById(id)
+func (s *Service) DeleteById(ctx context.Context, id int64) error {
+	err := s.repo.DeleteById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("error deleting employee with id %d: %w", id, err)
 	}
@@ -91,8 +92,8 @@ func (s *Service) DeleteById(id int64) error {
 	return nil
 }
 
-func (s *Service) DeleteByIds(ids []int64) error {
-	err := s.repo.DeleteByIds(ids)
+func (s *Service) DeleteByIds(ctx context.Context, ids []int64) error {
+	err := s.repo.DeleteByIds(ctx, ids)
 	if err != nil {
 		return fmt.Errorf("error deleting employee with id %d: %w", ids, err)
 	}

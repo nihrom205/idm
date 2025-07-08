@@ -1,6 +1,7 @@
 package role
 
 import (
+	"context"
 	"errors"
 	"github.com/gofiber/fiber/v3"
 	"github.com/nihrom205/idm/inner/common"
@@ -17,12 +18,12 @@ type Controller struct {
 
 // интерфейс сервиса employee.Service
 type Svc interface {
-	Create(request CreateRequest) (int64, error)
-	FindById(id int64) (Response, error)
-	GetAll() ([]Response, error)
-	FindByIds(ids []int64) ([]Response, error)
-	DeleteById(id int64) error
-	DeleteByIds(ids []int64) error
+	Create(ctx context.Context, request CreateRequest) (int64, error)
+	FindById(ctx context.Context, id int64) (Response, error)
+	GetAll(ctx context.Context) ([]Response, error)
+	FindByIds(ctx context.Context, ids []int64) ([]Response, error)
+	DeleteById(ctx context.Context, id int64) error
+	DeleteByIds(ctx context.Context, ids []int64) error
 }
 
 func NewController(server *web.Server, svc Svc, logger *common.Logger) *Controller {
@@ -54,7 +55,7 @@ func (c *Controller) CreateRole(ctx fiber.Ctx) error {
 	c.logger.Debug("create role", zap.Any("request", request))
 
 	// вызываем метод Create сервиса role.Service
-	newEmployeeId, err := c.roleService.Create(request)
+	newEmployeeId, err := c.roleService.Create(ctx.Context(), request)
 	if err != nil {
 		c.logger.Error("create role", zap.Any("request", request))
 		switch {
@@ -91,7 +92,7 @@ func (c *Controller) GetRole(ctx fiber.Ctx) error {
 	}
 
 	// вызываем метод FindById сервиса role.Service
-	response, err := c.roleService.FindById(id)
+	response, err := c.roleService.FindById(ctx.Context(), id)
 	if err != nil {
 		c.logger.Error("get role", zap.Any("request", idParam))
 		switch {
@@ -118,7 +119,7 @@ func (c *Controller) GetRole(ctx fiber.Ctx) error {
 func (c *Controller) GetAllRoles(ctx fiber.Ctx) error {
 
 	// вызываем метод GetAll сервиса role.Service
-	response, err := c.roleService.GetAll()
+	response, err := c.roleService.GetAll(ctx.Context())
 	if err != nil {
 		c.logger.Error("get all roles", zap.Any("request", err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
@@ -144,7 +145,7 @@ func (c *Controller) GetRoleByIds(ctx fiber.Ctx) error {
 	c.logger.Debug("get role by ids", zap.Any("request", request))
 
 	// вызываем метод FindByIds сервиса role.Service
-	response, err := c.roleService.FindByIds(request.Ids)
+	response, err := c.roleService.FindByIds(ctx.Context(), request.Ids)
 	if err != nil {
 		c.logger.Error("get role", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
@@ -171,7 +172,7 @@ func (c *Controller) DeleteRole(ctx fiber.Ctx) error {
 	}
 
 	// вызываем метод DeleteById сервиса role.Service
-	err = c.roleService.DeleteById(id)
+	err = c.roleService.DeleteById(ctx.Context(), id)
 	if err != nil {
 		c.logger.Error("delete role", zap.Any("request", idParam))
 		switch {
@@ -204,7 +205,7 @@ func (c *Controller) DeleteRolesByIds(ctx fiber.Ctx) error {
 	c.logger.Debug("delete roles by ids", zap.Any("request", request))
 
 	// вызываем метод DeleteByIds сервиса role.Service
-	err := c.roleService.DeleteByIds(request.Ids)
+	err := c.roleService.DeleteByIds(ctx.Context(), request.Ids)
 	if err != nil {
 		c.logger.Error("delete roles", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())

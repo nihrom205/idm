@@ -1,6 +1,7 @@
 package employee
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
@@ -18,37 +19,37 @@ type MockRepo struct {
 	mock.Mock
 }
 
-func (m *MockRepo) FindById(id int64) (Entity, error) {
+func (m *MockRepo) FindById(ctx context.Context, id int64) (Entity, error) {
 	args := m.Called(id)
 	return args.Get(0).(Entity), args.Error(1)
 }
 
-func (m *MockRepo) CreateTx(tx *sqlx.Tx, employee Entity) (int64, error) {
+func (m *MockRepo) CreateTx(ctx context.Context, tx *sqlx.Tx, employee Entity) (int64, error) {
 	args := m.Called(employee)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *MockRepo) GetAll() ([]Entity, error) {
+func (m *MockRepo) GetAll(ctx context.Context) ([]Entity, error) {
 	args := m.Called()
 	return args.Get(0).([]Entity), args.Error(1)
 }
 
-func (m *MockRepo) FindByIds(ids []int64) ([]Entity, error) {
+func (m *MockRepo) FindByIds(ctx context.Context, ids []int64) ([]Entity, error) {
 	args := m.Called(ids)
 	return args.Get(0).([]Entity), args.Error(1)
 }
 
-func (m *MockRepo) DeleteById(id int64) error {
+func (m *MockRepo) DeleteById(ctx context.Context, id int64) error {
 	args := m.Called(id)
 	return args.Error(0)
 }
 
-func (m *MockRepo) DeleteByIds(ids []int64) error {
+func (m *MockRepo) DeleteByIds(ctx context.Context, ids []int64) error {
 	args := m.Called(ids)
 	return args.Error(0)
 }
 
-func (m *MockRepo) FindByName(tx *sqlx.Tx, name string) (bool, error) {
+func (m *MockRepo) FindByName(ctx context.Context, tx *sqlx.Tx, name string) (bool, error) {
 	args := m.Called(tx, name)
 	return args.Bool(0), args.Error(1)
 }
@@ -69,7 +70,7 @@ func TestFindById(t *testing.T) {
 
 		repo.On("FindById", int64(1)).Return(entity, nil)
 
-		got, err := srv.FindById(1)
+		got, err := srv.FindById(context.Background(), 1)
 
 		a.Nil(err)
 
@@ -86,7 +87,7 @@ func TestFindById(t *testing.T) {
 		want := fmt.Errorf("error finding employee with id %d: %w", 1, err)
 
 		repo.On("FindById", int64(1)).Return(entity, err)
-		response, got := srv.FindById(1)
+		response, got := srv.FindById(context.Background(), 1)
 
 		a.Empty(response)
 		a.NotNil(got)
@@ -104,7 +105,7 @@ func TestGetAll(t *testing.T) {
 		entities := getSliceEntity(4)
 
 		repo.On("GetAll").Return(entities, nil)
-		got, err := srv.GetAll()
+		got, err := srv.GetAll(context.Background())
 
 		a.Nil(err)
 		a.Equal(len(entities), len(got))
@@ -120,7 +121,7 @@ func TestGetAll(t *testing.T) {
 		want := fmt.Errorf("error getting all employees: %w", err)
 
 		repo.On("GetAll").Return(entities, err)
-		response, got := srv.GetAll()
+		response, got := srv.GetAll(context.Background())
 
 		a.Empty(response)
 		a.NotNil(got)
@@ -140,7 +141,7 @@ func TestFindByIds(t *testing.T) {
 		findByIds := []int64{entities[0].Id, entities[1].Id, entities[2].Id}
 
 		repo.On("FindByIds", mock.Anything).Return(entities, nil)
-		got, err := srv.FindByIds(findByIds)
+		got, err := srv.FindByIds(context.Background(), findByIds)
 
 		a.Nil(err)
 		a.Equal(len(entities), len(got))
@@ -158,7 +159,7 @@ func TestFindByIds(t *testing.T) {
 		want := fmt.Errorf("error finding employee with id %d: %w", findByIds, err)
 
 		repo.On("FindByIds", mock.Anything).Return(entities, err)
-		response, got := srv.FindByIds(findByIds)
+		response, got := srv.FindByIds(context.Background(), findByIds)
 
 		a.Empty(response)
 		a.NotNil(err)
@@ -176,7 +177,7 @@ func TestDeleteById(t *testing.T) {
 		deleteById := int64(1)
 
 		repo.On("DeleteById", deleteById).Return(nil)
-		err := srv.DeleteById(deleteById)
+		err := srv.DeleteById(context.Background(), deleteById)
 
 		a.Nil(err)
 		a.True(repo.AssertNumberOfCalls(t, "DeleteById", 1))
@@ -192,7 +193,7 @@ func TestDeleteById(t *testing.T) {
 		want := fmt.Errorf("error deleting employee with id %d: %w", deleteById, err)
 
 		repo.On("DeleteById", deleteById).Return(err)
-		got := srv.DeleteById(deleteById)
+		got := srv.DeleteById(context.Background(), deleteById)
 
 		a.NotNil(err)
 		a.Equal(want, got)
@@ -209,7 +210,7 @@ func TestDeleteByIds(t *testing.T) {
 		deleteByIds := []int64{1, 2, 3}
 
 		repo.On("DeleteByIds", deleteByIds).Return(nil)
-		err := srv.DeleteByIds(deleteByIds)
+		err := srv.DeleteByIds(context.Background(), deleteByIds)
 
 		a.Nil(err)
 		a.True(repo.AssertNumberOfCalls(t, "DeleteByIds", 1))
@@ -225,7 +226,7 @@ func TestDeleteByIds(t *testing.T) {
 		want := fmt.Errorf("error deleting employee with id %d: %w", deleteByIds, err)
 
 		repo.On("DeleteByIds", deleteByIds).Return(err)
-		got := srv.DeleteByIds(deleteByIds)
+		got := srv.DeleteByIds(context.Background(), deleteByIds)
 
 		a.NotNil(err)
 		a.Equal(want, got)
@@ -263,7 +264,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		// Настраиваем mock для коммита транзакции
 		mock.ExpectCommit()
 
-		id, err := srv.Create(CreateRequest{Name: entity.Name})
+		id, err := srv.Create(context.Background(), CreateRequest{Name: entity.Name})
 		a.Nil(err)
 		a.NotNil(id)
 		a.Equal(entity.Id, id)
@@ -291,7 +292,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		// Настраиваем mock для коммита транзакции
 		mock.ExpectCommit()
 
-		id, err := srv.Create(CreateRequest{Name: entity.Name})
+		id, err := srv.Create(context.Background(), CreateRequest{Name: entity.Name})
 		a.NotNil(err)
 		a.NotNil(id)
 		a.Equal(int64(0), id)
@@ -320,7 +321,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 			WithArgs(entity.Name).
 			WillReturnError(errors.New("error insert failed"))
 
-		id, err := srv.Create(CreateRequest{Name: entity.Name})
+		id, err := srv.Create(context.Background(), CreateRequest{Name: entity.Name})
 		a.Equal(int64(0), id)
 		a.NotNil(err)
 		a.ErrorContains(err, "error insert failed")
@@ -338,7 +339,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 
 		mock.ExpectBegin().WillReturnError(fmt.Errorf("error create tx"))
 
-		_, err = service.Create(CreateRequest{Name: getEntity().Name})
+		_, err = service.Create(context.Background(), CreateRequest{Name: getEntity().Name})
 		a.NotNil(err)
 		a.ErrorContains(err, "error create tx")
 	})
@@ -361,7 +362,7 @@ func TestCreateIfNotEmployee(t *testing.T) {
 			WithArgs(entity.Name).
 			WillReturnError(errors.New("error find failed"))
 
-		id, err := service.Create(CreateRequest{Name: entity.Name})
+		id, err := service.Create(context.Background(), CreateRequest{Name: entity.Name})
 		a.Equal(int64(0), id)
 		a.NotNil(err)
 		a.ErrorContains(err, "error find failed")
