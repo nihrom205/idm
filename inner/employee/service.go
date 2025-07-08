@@ -1,19 +1,20 @@
 package employee
 
 import (
+	"context"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/nihrom205/idm/inner/common"
 )
 
 type Repo interface {
-	CreateTx(tx *sqlx.Tx, employee Entity) (int64, error)
-	FindById(id int64) (Entity, error)
-	GetAll() (employee []Entity, err error)
-	FindByIds(ids []int64) ([]Entity, error)
-	DeleteById(id int64) error
-	DeleteByIds(ids []int64) error
-	FindByName(tx *sqlx.Tx, name string) (bool, error)
+	CreateTx(ctx context.Context, tx *sqlx.Tx, employee Entity) (int64, error)
+	FindById(ctx context.Context, id int64) (Entity, error)
+	GetAll(ctx context.Context) (employee []Entity, err error)
+	FindByIds(ctx context.Context, ids []int64) ([]Entity, error)
+	DeleteById(ctx context.Context, id int64) error
+	DeleteByIds(ctx context.Context, ids []int64) error
+	FindByName(ctx context.Context, tx *sqlx.Tx, name string) (bool, error)
 	BeginTransaction() (*sqlx.Tx, error)
 }
 
@@ -35,7 +36,7 @@ func NewService(repo Repo, validator Validator) *Service {
 
 // Метод для создания нового сотрудника
 // принимает на вход CreateRequest - структура запроса на создание сотрудника
-func (s *Service) Create(request CreateRequest) (int64, error) {
+func (s *Service) Create(ctx context.Context, request CreateRequest) (int64, error) {
 
 	// валидируем запрос
 	err := s.validator.Validate(request)
@@ -76,7 +77,7 @@ func (s *Service) Create(request CreateRequest) (int64, error) {
 	}
 
 	// в рамках транзакции проверяем наличие в базе данных работника с таким же именем
-	isExist, err := s.repo.FindByName(tx, request.Name)
+	isExist, err := s.repo.FindByName(ctx, tx, request.Name)
 	if err != nil {
 		return 0, fmt.Errorf("error finding employee by name: %s, %w", request.Name, err)
 	}
@@ -86,7 +87,7 @@ func (s *Service) Create(request CreateRequest) (int64, error) {
 
 	// в случае отсутствия сотрудника с таким же именем - в рамках этой же транзакции вызываем метод репозитория,
 	// который должен будет создать нового сотрудника
-	newEmployeeId, err := s.repo.CreateTx(tx, request.ToEntity())
+	newEmployeeId, err := s.repo.CreateTx(ctx, tx, request.ToEntity())
 	if err != nil {
 		return 0, fmt.Errorf("error failed to create employee with id %d: %w", newEmployeeId, err)
 	}
@@ -94,8 +95,8 @@ func (s *Service) Create(request CreateRequest) (int64, error) {
 	return newEmployeeId, nil
 }
 
-func (s *Service) FindById(id int64) (Response, error) {
-	employees, err := s.repo.FindById(id)
+func (s *Service) FindById(ctx context.Context, id int64) (Response, error) {
+	employees, err := s.repo.FindById(ctx, id)
 	if err != nil {
 		return Response{}, fmt.Errorf("error finding employee with id %d: %w", id, err)
 	}
@@ -103,8 +104,8 @@ func (s *Service) FindById(id int64) (Response, error) {
 	return employees.toResponse(), nil
 }
 
-func (s *Service) GetAll() ([]Response, error) {
-	employees, err := s.repo.GetAll()
+func (s *Service) GetAll(ctx context.Context) ([]Response, error) {
+	employees, err := s.repo.GetAll(ctx)
 	if err != nil {
 		return []Response{}, fmt.Errorf("error getting all employees: %w", err)
 	}
@@ -117,8 +118,8 @@ func (s *Service) GetAll() ([]Response, error) {
 	return response, nil
 }
 
-func (s *Service) FindByIds(ids []int64) ([]Response, error) {
-	employee, err := s.repo.FindByIds(ids)
+func (s *Service) FindByIds(ctx context.Context, ids []int64) ([]Response, error) {
+	employee, err := s.repo.FindByIds(ctx, ids)
 	if err != nil {
 		return []Response{}, fmt.Errorf("error finding employee with id %d: %w", ids, err)
 	}
@@ -131,8 +132,8 @@ func (s *Service) FindByIds(ids []int64) ([]Response, error) {
 	return response, nil
 }
 
-func (s *Service) DeleteById(id int64) error {
-	err := s.repo.DeleteById(id)
+func (s *Service) DeleteById(ctx context.Context, id int64) error {
+	err := s.repo.DeleteById(ctx, id)
 	if err != nil {
 		return fmt.Errorf("error deleting employee with id %d: %w", id, err)
 	}
@@ -140,8 +141,8 @@ func (s *Service) DeleteById(id int64) error {
 	return nil
 }
 
-func (s *Service) DeleteByIds(ids []int64) error {
-	err := s.repo.DeleteByIds(ids)
+func (s *Service) DeleteByIds(ctx context.Context, ids []int64) error {
+	err := s.repo.DeleteByIds(ctx, ids)
 	if err != nil {
 		return fmt.Errorf("error deleting employee with id %d: %w", ids, err)
 	}

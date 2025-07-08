@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"github.com/nihrom205/idm/inner/role"
 )
 
@@ -16,7 +17,7 @@ func (f *FixtureRole) Role(name string) int64 {
 	entity := role.Entity{
 		Name: name,
 	}
-	newId, err := f.role.Create(entity)
+	newId, err := f.role.Create(context.Background(), entity)
 	if err != nil {
 		panic(err)
 	}

@@ -1,6 +1,7 @@
 package employee
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/gofiber/fiber/v3"
@@ -23,32 +24,32 @@ type MockService struct {
 }
 
 // Реализуем функции мок-сервиса
-func (svc *MockService) FindById(id int64) (Response, error) {
+func (svc *MockService) FindById(ctx context.Context, id int64) (Response, error) {
 	args := svc.Called(id)
 	return args.Get(0).(Response), args.Error(1)
 }
 
-func (svc *MockService) Create(request CreateRequest) (int64, error) {
+func (svc *MockService) Create(ctx context.Context, request CreateRequest) (int64, error) {
 	args := svc.Called(request)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (svc *MockService) GetAll() ([]Response, error) {
+func (svc *MockService) GetAll(ctx context.Context) ([]Response, error) {
 	args := svc.Called()
 	return args.Get(0).([]Response), args.Error(1)
 }
 
-func (svc *MockService) FindByIds(ids []int64) ([]Response, error) {
+func (svc *MockService) FindByIds(ctx context.Context, ids []int64) ([]Response, error) {
 	args := svc.Called(ids)
 	return args.Get(0).([]Response), args.Error(1)
 }
 
-func (svc *MockService) DeleteById(id int64) error {
+func (svc *MockService) DeleteById(ctx context.Context, id int64) error {
 	args := svc.Called(id)
 	return args.Error(0)
 }
 
-func (svc *MockService) DeleteByIds(ids []int64) error {
+func (svc *MockService) DeleteByIds(ctx context.Context, ids []int64) error {
 	args := svc.Called(ids)
 	return args.Error(0)
 }
