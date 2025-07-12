@@ -7,6 +7,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/brianvoe/gofakeit"
 	"github.com/jmoiron/sqlx"
+	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/common/validator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -57,6 +58,16 @@ func (m *MockRepo) FindByName(ctx context.Context, tx *sqlx.Tx, name string) (bo
 func (m *MockRepo) BeginTransaction() (*sqlx.Tx, error) {
 	args := m.Called()
 	return args.Get(0).(*sqlx.Tx), args.Error(1)
+}
+
+func (m *MockRepo) FindPage(ctx context.Context, offset int, limit int) ([]Entity, error) {
+	args := m.Called(offset, limit)
+	return args.Get(0).([]Entity), args.Error(1)
+}
+
+func (m *MockRepo) CountAll(ctx context.Context) (int64, error) {
+	args := m.Called()
+	return args.Get(0).(int64), args.Error(1)
 }
 
 func TestFindById(t *testing.T) {
@@ -366,6 +377,55 @@ func TestCreateIfNotEmployee(t *testing.T) {
 		a.Equal(int64(0), id)
 		a.NotNil(err)
 		a.ErrorContains(err, "error find failed")
+	})
+}
+
+func TestRepositoryFindPage(t *testing.T) {
+	a := assert.New(t)
+
+	t.Run("should return err validation PageSize < 1", func(t *testing.T) {
+		repo := &MockRepo{}
+		srv := NewService(repo, validator.NewValidator())
+		request := PageRequest{
+			PageSize:   0,
+			PageNumber: 1,
+		}
+		_, err := srv.FindPage(context.Background(), request)
+		a.NotNil(err)
+		var validateErr common.RequestValidatorError
+		ok := errors.As(err, &validateErr)
+		a.True(ok)
+		a.Contains(validateErr.Message, "Field validation")
+	})
+
+	t.Run("should return err validation PageSize > 100", func(t *testing.T) {
+		repo := &MockRepo{}
+		srv := NewService(repo, validator.NewValidator())
+		request := PageRequest{
+			PageSize:   101,
+			PageNumber: 1,
+		}
+		_, err := srv.FindPage(context.Background(), request)
+		a.NotNil(err)
+		var validateErr common.RequestValidatorError
+		ok := errors.As(err, &validateErr)
+		a.True(ok)
+		a.Contains(validateErr.Message, "Field validation")
+	})
+
+	t.Run("should return err validation PageNumber < 0", func(t *testing.T) {
+		repo := &MockRepo{}
+		srv := NewService(repo, validator.NewValidator())
+		request := PageRequest{
+			PageSize:   1,
+			PageNumber: -1,
+		}
+		_, err := srv.FindPage(context.Background(), request)
+		a.NotNil(err)
+		var validateErr common.RequestValidatorError
+		ok := errors.As(err, &validateErr)
+		a.True(ok)
+		a.Contains(validateErr.Message, "Field validation")
 	})
 }
 

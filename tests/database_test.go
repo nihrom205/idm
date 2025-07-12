@@ -26,7 +26,13 @@ func TestConnectWithCfgWhenCorrectDSNThenReturnConnect(t *testing.T) {
 		}
 	}()
 
-	err = os.WriteFile(configName, []byte("DB_DRIVER_NAME=postgres\nDB_DSN='host=localhost port=5433 user=user password=user dbname=idm_db_test sslmode=disable'\n"), 0644)
+	err = os.WriteFile(configName, []byte(
+		"DB_DRIVER_NAME=postgres\n"+
+			"DB_DSN='host=localhost port=5433 user=user password=user dbname=idm_db_test sslmode=disable'\n"+
+			"APP_NAME=idm_test\n"+
+			"APP_VERSION=0.0.1\n"+
+			"LOG_LEVEL=INFO\n"+
+			"LOG_DEVELOP_MODE=true"), 0644)
 	if err != nil {
 		return
 	}

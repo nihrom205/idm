@@ -54,6 +54,11 @@ func (svc *MockService) DeleteByIds(ctx context.Context, ids []int64) error {
 	return args.Error(0)
 }
 
+func (svc *MockService) FindPage(ctx context.Context, req PageRequest) (PageResponse, error) {
+	args := svc.Called(req)
+	return args.Get(0).(PageResponse), args.Error(1)
+}
+
 func TestController_CreateEmployee(t *testing.T) {
 	var a = assert.New(t)
 	// Создаем тестовый логгер
