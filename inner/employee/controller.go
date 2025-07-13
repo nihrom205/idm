@@ -224,14 +224,14 @@ func (c *Controller) DeleteEmployeesByIds(ctx fiber.Ctx) error {
 // GetEmployeesPage получает страницу сотрудников
 // функция-хендлер, которая будет вызываться при GET запросе по маршруту /api/v1/employees/page?pageNumber=x&pageSize=y
 func (c *Controller) GetPageEmployee(ctx fiber.Ctx) error {
-	pageSize, err := strconv.Atoi(ctx.Query("pageSize", "0"))
+	pageSize, err := strconv.Atoi(ctx.Query("pageSize", "1"))
 	if err != nil {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid pageSize")
 	}
 
 	pageNumber, err := strconv.Atoi(ctx.Query("pageNumber", "0"))
 	if err != nil {
-		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid pageNumber")
+		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
 
 	// идем в бд за данными
@@ -243,7 +243,7 @@ func (c *Controller) GetPageEmployee(ctx fiber.Ctx) error {
 
 	page, err := c.employeeService.FindPage(ctx.Context(), request)
 	if err != nil {
-		return err
+		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid pageSize")
 	}
 
 	// возвращаем успешный ответ

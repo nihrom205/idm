@@ -87,6 +87,48 @@ func TestGetPageEmployee(t *testing.T) {
 		a.Len(wrapped.Data.Result, 0)
 		a.Equal(int64(5), wrapped.Data.Total)
 	})
+
+	t.Run("should return error for invalid pageSize", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/employees/page?pageNumber=0&pageSize=0", nil)
+		resp, err := app.Test(req)
+		a.Nil(err)
+		a.NotNil(resp)
+		a.Equal(http.StatusBadRequest, resp.StatusCode)
+
+		var errResp map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&errResp)
+		a.Nil(err)
+		a.NotNil(errResp)
+		a.Contains(errResp["error"], "invalid pageSize")
+	})
+
+	t.Run("should use default PageNumber", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/employees/page?pageSize=3", nil)
+		resp, err := app.Test(req)
+		a.Nil(err)
+		a.NotNil(resp)
+		a.Equal(http.StatusOK, resp.StatusCode)
+
+		var wrapped WrappedPageResponse
+		err = json.NewDecoder(resp.Body).Decode(&wrapped)
+		a.Nil(err)
+		a.Len(wrapped.Data.Result, 3)
+		a.Equal(int64(5), wrapped.Data.Total)
+	})
+
+	t.Run("should use default PageSize", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/employees/page?pageNumber=0", nil)
+		resp, err := app.Test(req)
+		a.Nil(err)
+		a.NotNil(resp)
+		a.Equal(http.StatusOK, resp.StatusCode)
+
+		var wrapped WrappedPageResponse
+		err = json.NewDecoder(resp.Body).Decode(&wrapped)
+		a.Nil(err)
+		a.Len(wrapped.Data.Result, 1)
+		a.Equal(int64(5), wrapped.Data.Total)
+	})
 }
 
 // initTestApp создает Fiber-приложение с реальными зависимостями для интеграционных тестов.
