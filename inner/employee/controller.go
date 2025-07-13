@@ -1,6 +1,7 @@
 package employee
 
 import (
+	"context"
 	"errors"
 	"github.com/gofiber/fiber/v3"
 	"github.com/nihrom205/idm/inner/common"
@@ -17,12 +18,12 @@ type Controller struct {
 
 // интерфейс сервиса employee.Service
 type Svc interface {
-	Create(request CreateRequest) (int64, error)
-	FindById(id int64) (Response, error)
-	GetAll() ([]Response, error)
-	FindByIds(ids []int64) ([]Response, error)
-	DeleteById(id int64) error
-	DeleteByIds(ids []int64) error
+	Create(ctx context.Context, request CreateRequest) (int64, error)
+	FindById(ctx context.Context, id int64) (Response, error)
+	GetAll(ctx context.Context) ([]Response, error)
+	FindByIds(ctx context.Context, ids []int64) ([]Response, error)
+	DeleteById(ctx context.Context, id int64) error
+	DeleteByIds(ctx context.Context, ids []int64) error
 }
 
 func NewController(server *web.Server, svc Svc, logger *common.Logger) *Controller {
@@ -54,7 +55,7 @@ func (c *Controller) CreateEmployee(ctx fiber.Ctx) error {
 	// логируем тело запроса
 	c.logger.Debug("create employee: received request", zap.Any("request", request))
 	// вызываем метод Create сервиса employee.Service
-	newEmployeeId, err := c.employeeService.Create(request)
+	newEmployeeId, err := c.employeeService.Create(ctx.Context(), request)
 	if err != nil {
 		c.logger.Error("create employee", zap.Error(err))
 		switch {
@@ -91,7 +92,7 @@ func (c *Controller) GetEmployee(ctx fiber.Ctx) error {
 	}
 
 	// вызываем метод FindById сервиса employee.Service
-	response, err := c.employeeService.FindById(id)
+	response, err := c.employeeService.FindById(ctx.Context(), id)
 	if err != nil {
 		c.logger.Error("get employee", zap.String("id", idParam), zap.Error(err))
 		switch {
@@ -118,7 +119,7 @@ func (c *Controller) GetEmployee(ctx fiber.Ctx) error {
 func (c *Controller) GetAllEmployees(ctx fiber.Ctx) error {
 
 	// вызываем метод GetAll сервиса employee.Service
-	response, err := c.employeeService.GetAll()
+	response, err := c.employeeService.GetAll(ctx.Context())
 	if err != nil {
 		c.logger.Error("get all employees", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
@@ -144,7 +145,7 @@ func (c *Controller) GetEmployeeByIds(ctx fiber.Ctx) error {
 	c.logger.Debug("get employee by ids", zap.Any("request", request))
 
 	// вызываем метод FindByIds сервиса employee.Service
-	response, err := c.employeeService.FindByIds(request.Ids)
+	response, err := c.employeeService.FindByIds(ctx.Context(), request.Ids)
 	if err != nil {
 		c.logger.Error("get employee by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
@@ -171,7 +172,7 @@ func (c *Controller) DeleteEmployee(ctx fiber.Ctx) error {
 	}
 
 	// вызываем метод DeleteById сервиса employee.Service
-	err = c.employeeService.DeleteById(id)
+	err = c.employeeService.DeleteById(ctx.Context(), id)
 	if err != nil {
 		c.logger.Error("delete employee", zap.String("id", idParam), zap.Error(err))
 		switch {
@@ -204,7 +205,7 @@ func (c *Controller) DeleteEmployeesByIds(ctx fiber.Ctx) error {
 	c.logger.Debug("delete employees by ids", zap.Any("request", request))
 
 	// вызываем метод DeleteByIds сервиса employee.Service
-	err := c.employeeService.DeleteByIds(request.Ids)
+	err := c.employeeService.DeleteByIds(ctx.Context(), request.Ids)
 	if err != nil {
 		c.logger.Error("delete employees by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
