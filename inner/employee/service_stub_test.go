@@ -47,6 +47,14 @@ func (s *StubRepo) BeginTransaction() (*sqlx.Tx, error) {
 	return nil, nil
 }
 
+func (s *StubRepo) FindPage(ctx context.Context, offset int, limit int) ([]Entity, error) {
+	return []Entity{}, nil
+}
+
+func (s *StubRepo) CountAll(ctx context.Context) (int64, error) {
+	return 0, nil
+}
+
 func TestStubFindById(t *testing.T) {
 	a := assert.New(t)
 

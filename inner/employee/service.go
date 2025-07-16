@@ -16,6 +16,20 @@ type Repo interface {
 	DeleteByIds(ctx context.Context, ids []int64) error
 	FindByName(ctx context.Context, tx *sqlx.Tx, name string) (bool, error)
 	BeginTransaction() (*sqlx.Tx, error)
+	FindPage(ctx context.Context, offset int, limit int) ([]Entity, error)
+	CountAll(ctx context.Context) (int64, error)
+}
+
+type PageResponse struct {
+	Result     any   `json:"result"`
+	PageSize   int   `json:"page_size"`
+	PageNumber int   `json:"page_number"`
+	Total      int64 `json:"total"`
+}
+
+type PageRequest struct {
+	PageSize   int `validate:"min=1,max=100"`
+	PageNumber int `validate:"min=0"`
 }
 
 type Validator interface {
@@ -148,4 +162,39 @@ func (s *Service) DeleteByIds(ctx context.Context, ids []int64) error {
 	}
 
 	return nil
+}
+
+func (s *Service) FindPage(ctx context.Context, request PageRequest) (PageResponse, error) {
+
+	// валидируем запрос
+	err := s.validator.Validate(request)
+	if err != nil {
+		// возвращаем кастомную ошибку в случае, если запрос не прошёл валидацию
+		return PageResponse{}, common.RequestValidatorError{Message: err.Error()}
+	}
+
+	offset := request.PageNumber * request.PageSize
+
+	entities, err := s.repo.FindPage(ctx, offset, request.PageSize)
+	if err != nil {
+		return PageResponse{}, fmt.Errorf("error finding page employee: %w", err)
+	}
+
+	total, err := s.repo.CountAll(ctx)
+	if err != nil {
+		return PageResponse{}, fmt.Errorf("error counting total employee: %w", err)
+	}
+
+	respEmployees := make([]Response, 0, len(entities))
+	for _, employee := range entities {
+		respEmployees = append(respEmployees, employee.toResponse())
+	}
+
+	resp := PageResponse{
+		Result:     respEmployees,
+		PageSize:   request.PageSize,
+		PageNumber: request.PageNumber,
+		Total:      total,
+	}
+	return resp, nil
 }

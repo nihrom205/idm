@@ -24,6 +24,7 @@ type Svc interface {
 	FindByIds(ctx context.Context, ids []int64) ([]Response, error)
 	DeleteById(ctx context.Context, id int64) error
 	DeleteByIds(ctx context.Context, ids []int64) error
+	FindPage(ctx context.Context, req PageRequest) (PageResponse, error)
 }
 
 func NewController(server *web.Server, svc Svc, logger *common.Logger) *Controller {
@@ -36,6 +37,7 @@ func NewController(server *web.Server, svc Svc, logger *common.Logger) *Controll
 
 func (c *Controller) RegisterRoutes() {
 	c.server.GroupApiV1.Post("/employees", c.CreateEmployee)
+	c.server.GroupApiV1.Get("/employees/page", c.GetPageEmployee)
 	c.server.GroupApiV1.Get("/employees/:id", c.GetEmployee)
 	c.server.GroupApiV1.Get("/employees", c.GetAllEmployees)
 	c.server.GroupApiV1.Post("/employees/ids", c.GetEmployeeByIds)
@@ -214,6 +216,39 @@ func (c *Controller) DeleteEmployeesByIds(ctx fiber.Ctx) error {
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, struct{}{}); err != nil {
 		c.logger.Error("delete employees by ids", zap.Error(err))
+		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+	return nil
+}
+
+// GetEmployeesPage получает страницу сотрудников
+// функция-хендлер, которая будет вызываться при GET запросе по маршруту /api/v1/employees/page?pageNumber=x&pageSize=y
+func (c *Controller) GetPageEmployee(ctx fiber.Ctx) error {
+	pageSize, err := strconv.Atoi(ctx.Query("pageSize", "1"))
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid pageSize")
+	}
+
+	pageNumber, err := strconv.Atoi(ctx.Query("pageNumber", "0"))
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
+	}
+
+	// идем в бд за данными
+	request := PageRequest{
+		PageSize:   pageSize,
+		PageNumber: pageNumber,
+	}
+	c.logger.Debug("get page employee by pageNumber and pageSize", zap.Any("request", request))
+
+	page, err := c.employeeService.FindPage(ctx.Context(), request)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid pageSize")
+	}
+
+	// возвращаем успешный ответ
+	if err := common.OkResponse(ctx, page); err != nil {
+		c.logger.Error("get page employee by pageNumber and pageSize", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil

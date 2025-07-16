@@ -83,3 +83,19 @@ func (r *Repository) FindByName(ctx context.Context, tx *sqlx.Tx, name string) (
 	err = tx.GetContext(ctx, &isExists, query, name)
 	return isExists, err
 }
+
+// FindPage возвращает сотрудников с учетом пагинации (limit, offset)
+func (r *Repository) FindPage(ctx context.Context, offset int, limit int) ([]Entity, error) {
+	var employees []Entity
+	query := "SELECT * FROM employee LIMIT $1 OFFSET $2"
+	err := r.db.SelectContext(ctx, &employees, query, limit, offset)
+	return employees, err
+}
+
+// CountAll возвращает кол-во записей
+func (r *Repository) CountAll(ctx context.Context) (int64, error) {
+	var total int64
+	query := "SELECT COUNT(*) FROM employee"
+	err := r.db.GetContext(ctx, &total, query)
+	return total, err
+}
