@@ -158,7 +158,7 @@ func TestGetPageEmployee(t *testing.T) {
 		a.Equal(int64(5), wrapped.Data.Total)
 	})
 
-	t.Run("should return 0 employee name < 3 char", func(t *testing.T) {
+	t.Run("should return all employee name only spaces", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/v1/employees/page?pageNumber=0&pageSize=3&textFilter=%20%20%20", nil)
 		resp, err := app.Test(req)
 		a.Nil(err)
