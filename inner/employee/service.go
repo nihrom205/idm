@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/nihrom205/idm/inner/common"
+	"strings"
 )
 
 type Repo interface {
@@ -16,8 +17,8 @@ type Repo interface {
 	DeleteByIds(ctx context.Context, ids []int64) error
 	FindByName(ctx context.Context, tx *sqlx.Tx, name string) (bool, error)
 	BeginTransaction() (*sqlx.Tx, error)
-	FindPage(ctx context.Context, offset int, limit int) ([]Entity, error)
-	CountAll(ctx context.Context) (int64, error)
+	FindPage(ctx context.Context, offset int, limit int, textFilter string) ([]Entity, error)
+	CountAll(ctx context.Context, textFilter string) (int64, error)
 }
 
 type PageResponse struct {
@@ -30,6 +31,7 @@ type PageResponse struct {
 type PageRequest struct {
 	PageSize   int `validate:"min=1,max=100"`
 	PageNumber int `validate:"min=0"`
+	TextFilter string
 }
 
 type Validator interface {
@@ -175,12 +177,13 @@ func (s *Service) FindPage(ctx context.Context, request PageRequest) (PageRespon
 
 	offset := request.PageNumber * request.PageSize
 
-	entities, err := s.repo.FindPage(ctx, offset, request.PageSize)
+	textFilter := strings.TrimSpace(request.TextFilter)
+	entities, err := s.repo.FindPage(ctx, offset, request.PageSize, textFilter)
 	if err != nil {
 		return PageResponse{}, fmt.Errorf("error finding page employee: %w", err)
 	}
 
-	total, err := s.repo.CountAll(ctx)
+	total, err := s.repo.CountAll(ctx, textFilter)
 	if err != nil {
 		return PageResponse{}, fmt.Errorf("error counting total employee: %w", err)
 	}

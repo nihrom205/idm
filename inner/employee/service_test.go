@@ -60,13 +60,13 @@ func (m *MockRepo) BeginTransaction() (*sqlx.Tx, error) {
 	return args.Get(0).(*sqlx.Tx), args.Error(1)
 }
 
-func (m *MockRepo) FindPage(ctx context.Context, offset int, limit int) ([]Entity, error) {
+func (m *MockRepo) FindPage(ctx context.Context, offset int, limit int, textFilter string) ([]Entity, error) {
 	args := m.Called(offset, limit)
 	return args.Get(0).([]Entity), args.Error(1)
 }
 
-func (m *MockRepo) CountAll(ctx context.Context) (int64, error) {
-	args := m.Called()
+func (m *MockRepo) CountAll(ctx context.Context, textFilter string) (int64, error) {
+	args := m.Called(textFilter)
 	return args.Get(0).(int64), args.Error(1)
 }
 

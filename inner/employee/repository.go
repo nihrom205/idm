@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"strings"
+	"unicode/utf8"
 )
 
 type Repository struct {
@@ -85,17 +87,38 @@ func (r *Repository) FindByName(ctx context.Context, tx *sqlx.Tx, name string) (
 }
 
 // FindPage возвращает сотрудников с учетом пагинации (limit, offset)
-func (r *Repository) FindPage(ctx context.Context, offset int, limit int) ([]Entity, error) {
+func (r *Repository) FindPage(ctx context.Context, offset int, limit int, textFilter string) ([]Entity, error) {
 	var employees []Entity
-	query := "SELECT * FROM employee LIMIT $1 OFFSET $2"
-	err := r.db.SelectContext(ctx, &employees, query, limit, offset)
+	sb := strings.Builder{}
+	var args []interface{}
+
+	sb.WriteString("SELECT * FROM employee WHERE 1=1")
+	if utf8.RuneCountInString(textFilter) >= 3 {
+		sb.WriteString(" AND name ILIKE $1")
+		args = append(args, "%"+textFilter+"%")
+		sb.WriteString(" OFFSET $2 LIMIT $3")
+		args = append(args, offset, limit)
+	} else {
+		sb.WriteString(" OFFSET $1 LIMIT $2")
+		args = append(args, offset, limit)
+	}
+
+	err := r.db.SelectContext(ctx, &employees, sb.String(), args...)
 	return employees, err
 }
 
 // CountAll возвращает кол-во записей
-func (r *Repository) CountAll(ctx context.Context) (int64, error) {
+func (r *Repository) CountAll(ctx context.Context, textFilter string) (int64, error) {
 	var total int64
-	query := "SELECT COUNT(*) FROM employee"
-	err := r.db.GetContext(ctx, &total, query)
+	sb := strings.Builder{}
+	var args []interface{}
+
+	sb.WriteString("SELECT COUNT(*) FROM employee WHERE 1=1")
+	textFilter = strings.TrimSpace(textFilter)
+	if utf8.RuneCountInString(textFilter) >= 3 {
+		sb.WriteString(" AND name ILIKE $1")
+		args = append(args, "%"+textFilter+"%")
+	}
+	err := r.db.GetContext(ctx, &total, sb.String(), args...)
 	return total, err
 }

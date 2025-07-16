@@ -34,7 +34,7 @@ func TestGetPageEmployee(t *testing.T) {
 		clearDatabaseRole(db)
 	}()
 
-	names := []string{"Ivan", "Stas", "Stepan", "Viktor", "Dima"}
+	names := []string{"Ivan", "Stas", "Stepan", "Viktor", "Stas2"}
 	for _, name := range names {
 		fixture.Employee(name)
 	}
@@ -127,6 +127,48 @@ func TestGetPageEmployee(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(&wrapped)
 		a.Nil(err)
 		a.Len(wrapped.Data.Result, 1)
+		a.Equal(int64(5), wrapped.Data.Total)
+	})
+
+	t.Run("should return 2 employee name >= 3 char", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/employees/page?pageNumber=0&pageSize=1&textFilter=sta", nil)
+		resp, err := app.Test(req)
+		a.Nil(err)
+		a.NotNil(resp)
+		a.Equal(http.StatusOK, resp.StatusCode)
+
+		var wrapped WrappedPageResponse
+		err = json.NewDecoder(resp.Body).Decode(&wrapped)
+		a.Nil(err)
+		a.Len(wrapped.Data.Result, 1)
+		a.Equal(int64(2), wrapped.Data.Total)
+	})
+
+	t.Run("should return 0 employee name < 3 char", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/employees/page?pageNumber=0&pageSize=3&textFilter=st", nil)
+		resp, err := app.Test(req)
+		a.Nil(err)
+		a.NotNil(resp)
+		a.Equal(http.StatusOK, resp.StatusCode)
+
+		var wrapped WrappedPageResponse
+		err = json.NewDecoder(resp.Body).Decode(&wrapped)
+		a.Nil(err)
+		a.Len(wrapped.Data.Result, 3)
+		a.Equal(int64(5), wrapped.Data.Total)
+	})
+
+	t.Run("should return 0 employee name < 3 char", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/employees/page?pageNumber=0&pageSize=3&textFilter=%20%20%20", nil)
+		resp, err := app.Test(req)
+		a.Nil(err)
+		a.NotNil(resp)
+		a.Equal(http.StatusOK, resp.StatusCode)
+
+		var wrapped WrappedPageResponse
+		err = json.NewDecoder(resp.Body).Decode(&wrapped)
+		a.Nil(err)
+		a.Len(wrapped.Data.Result, 3)
 		a.Equal(int64(5), wrapped.Data.Total)
 	})
 }
