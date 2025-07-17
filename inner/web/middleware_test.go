@@ -2,7 +2,7 @@ package web
 
 import (
 	"encoding/json"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -18,7 +18,7 @@ func TestRecoverMiddleware(t *testing.T) {
 
 		// Настраиваем роут для теста
 		route := func(app *fiber.App) {
-			app.Get("/panic", func(c fiber.Ctx) error {
+			app.Get("/panic", func(c *fiber.Ctx) error {
 				panic("test panic")
 			})
 		}
@@ -46,7 +46,7 @@ func TestRequestIdMiddleware(t *testing.T) {
 		server := NewServer()
 
 		// Добавляем тестовый роут, который возвращает Request ID
-		server.App.Get("/test", func(c fiber.Ctx) error {
+		server.App.Get("/test", func(c *fiber.Ctx) error {
 			requestId := c.Locals("requestid")
 			return c.JSON(fiber.Map{
 				"request_id": requestId,
@@ -83,7 +83,7 @@ func TestRequestIdMiddleware(t *testing.T) {
 		server := NewServer()
 
 		// Добавляем тестовый роут, который возвращает Request ID
-		server.App.Get("/test", func(c fiber.Ctx) error {
+		server.App.Get("/test", func(c *fiber.Ctx) error {
 			requestId := c.Locals("requestid")
 			return c.JSON(fiber.Map{
 				"request_id": requestId,

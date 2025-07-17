@@ -3,7 +3,7 @@ package employee
 import (
 	"context"
 	"errors"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/web"
 	"go.uber.org/zap"
@@ -46,11 +46,11 @@ func (c *Controller) RegisterRoutes() {
 }
 
 // функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/employees"
-func (c *Controller) CreateEmployee(ctx fiber.Ctx) error {
+func (c *Controller) CreateEmployee(ctx *fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру CreateRequest
 	var request CreateRequest
-	if err := ctx.Bind().Body(&request); err != nil {
+	if err := ctx.BodyParser(&request); err != nil {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
 
@@ -82,7 +82,7 @@ func (c *Controller) CreateEmployee(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/employees/:id"
-func (c *Controller) GetEmployee(ctx fiber.Ctx) error {
+func (c *Controller) GetEmployee(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -118,7 +118,7 @@ func (c *Controller) GetEmployee(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/employees"
-func (c *Controller) GetAllEmployees(ctx fiber.Ctx) error {
+func (c *Controller) GetAllEmployees(ctx *fiber.Ctx) error {
 
 	// вызываем метод GetAll сервиса employee.Service
 	response, err := c.employeeService.GetAll(ctx.Context())
@@ -136,11 +136,11 @@ func (c *Controller) GetAllEmployees(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/employees/ids"
-func (c *Controller) GetEmployeeByIds(ctx fiber.Ctx) error {
+func (c *Controller) GetEmployeeByIds(ctx *fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру FindByIdsRequest
 	var request FindByIdsRequest
-	if err := ctx.Bind().Body(&request); err != nil {
+	if err := ctx.BodyParser(&request); err != nil {
 		c.logger.Error("get employee by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
@@ -162,7 +162,7 @@ func (c *Controller) GetEmployeeByIds(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/employees/:id"
-func (c *Controller) DeleteEmployee(ctx fiber.Ctx) error {
+func (c *Controller) DeleteEmployee(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -196,11 +196,11 @@ func (c *Controller) DeleteEmployee(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/employees/ids"
-func (c *Controller) DeleteEmployeesByIds(ctx fiber.Ctx) error {
+func (c *Controller) DeleteEmployeesByIds(ctx *fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру DeleteByIdsRequest
 	var request DeleteByIdsRequest
-	if err := ctx.Bind().Body(&request); err != nil {
+	if err := ctx.BodyParser(&request); err != nil {
 		c.logger.Error("delete employees by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
@@ -223,7 +223,7 @@ func (c *Controller) DeleteEmployeesByIds(ctx fiber.Ctx) error {
 
 // GetEmployeesPage получает страницу сотрудников
 // функция-хендлер, которая будет вызываться при GET запросе по маршруту /api/v1/employees/page?pageNumber=x&pageSize=y
-func (c *Controller) GetPageEmployee(ctx fiber.Ctx) error {
+func (c *Controller) GetPageEmployee(ctx *fiber.Ctx) error {
 	pageSize, err := strconv.Atoi(ctx.Query("pageSize", "1"))
 	if err != nil {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid pageSize")
