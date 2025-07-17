@@ -27,3 +27,6 @@ test-coverage:
 	go tool cover -html=coverage.out;
 	go tool cover -func=./coverage.out | grep "total";
 	grep -sqFx "/coverage.out" .gitignore || echo "/coverage.out" >> .gitignore
+
+swag-generate:
+	swag init -d cmd,inner --parseDependency --parseInternal

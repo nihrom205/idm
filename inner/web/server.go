@@ -1,6 +1,10 @@
 package web
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
+	_ "github.com/nihrom205/idm/docs" // обязательно импортируем наш пакет с документацией
+)
 
 type Server struct {
 	App *fiber.App
@@ -16,6 +20,9 @@ func NewServer() *Server {
 
 	// подключаем middleware
 	registerMiddleware(app)
+
+	// Swagger UI
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	groupInternal := app.Group("/internal")
 

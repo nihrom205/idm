@@ -46,6 +46,17 @@ func (c *Controller) RegisterRoutes() {
 }
 
 // функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/employees"
+// @Description Create a new employee.
+// @Summary create a new employee
+// @ID create-employee
+// @Tags employee
+// @Accept json
+// @Produce json
+// @Param request body employee.CreateRequest true "name employee"
+// @Success 200 {object} common.Response[int64]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /employees [post]
 func (c *Controller) CreateEmployee(ctx *fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру CreateRequest
@@ -82,6 +93,17 @@ func (c *Controller) CreateEmployee(ctx *fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/employees/:id"
+// @Description Get employee.
+// @Summary get employee
+// @ID get-employee
+// @Tags employee
+// @Accept json
+// @Produce json
+// @Param id path int64 true "id employee"
+// @Success 200 {object} common.Response[employee.Response]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /employees/{id} [get]
 func (c *Controller) GetEmployee(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
@@ -118,6 +140,16 @@ func (c *Controller) GetEmployee(ctx *fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/employees"
+// @Description Get all employee.
+// @Summary get all employee
+// @ID get-all-employee
+// @Tags employee
+// @Accept json
+// @Produce json
+// @Success 200 {object} common.Response[employee.Response]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /employees [get]
 func (c *Controller) GetAllEmployees(ctx *fiber.Ctx) error {
 
 	// вызываем метод GetAll сервиса employee.Service
@@ -136,6 +168,17 @@ func (c *Controller) GetAllEmployees(ctx *fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/employees/ids"
+// @Description Get employee by id.
+// @Summary get employee by id
+// @ID get-employee-by-id
+// @Tags employee
+// @Accept json
+// @Produce json
+// @Param ids body employee.FindByIdsRequest true "ids employee"
+// @Success 200 {object} common.Response[employee.Response]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /employees/ids [post]
 func (c *Controller) GetEmployeeByIds(ctx *fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру FindByIdsRequest
@@ -162,6 +205,17 @@ func (c *Controller) GetEmployeeByIds(ctx *fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/employees/:id"
+// @Description Delete employee by id.
+// @Summary delete employee by id
+// @ID delete-employee-by-id
+// @Tags employee
+// @Accept json
+// @Produce json
+// @Param id path int64 true "id employee"
+// @Success 200 {object} common.Response[int64]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /employees/{id} [delete]
 func (c *Controller) DeleteEmployee(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
@@ -196,6 +250,17 @@ func (c *Controller) DeleteEmployee(ctx *fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/employees/ids"
+// @Description Delete employee by list ids.
+// @Summary delete employee by list ids
+// @ID delete-employee-by-list-ids
+// @Tags employee
+// @Accept json
+// @Produce json
+// @Param ids body employee.DeleteByIdsRequest true "ids employee"
+// @Success 200 {object} common.Response[int64]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /employees/ids [delete]
 func (c *Controller) DeleteEmployeesByIds(ctx *fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру DeleteByIdsRequest
@@ -223,15 +288,29 @@ func (c *Controller) DeleteEmployeesByIds(ctx *fiber.Ctx) error {
 
 // GetEmployeesPage получает страницу сотрудников
 // функция-хендлер, которая будет вызываться при GET запросе по маршруту /api/v1/employees/page?pageNumber=x&pageSize=y
+// @Description Get employee by pagination.
+// @Summary get employee by pagination
+// @ID get-employee-by-pagination
+// @Tags employee
+// @Accept json
+// @Produce json
+// @Param pageNumber query integer false "Number page (start with 0)"
+// @Param pageSize query integer false "Size page (default 1)"
+// @Param textFilter query string false "Size page (default 1)"
+// @Success 200 {object} common.Response[employee.Response]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /employees/page [get]
 func (c *Controller) GetPageEmployee(ctx *fiber.Ctx) error {
-	pageSize, err := strconv.Atoi(ctx.Query("pageSize", "1"))
-	if err != nil {
-		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid pageSize")
-	}
 
 	pageNumber, err := strconv.Atoi(ctx.Query("pageNumber", "0"))
 	if err != nil {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
+	}
+
+	pageSize, err := strconv.Atoi(ctx.Query("pageSize", "1"))
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid pageSize")
 	}
 
 	textFilter := ctx.Query("textFilter", "")

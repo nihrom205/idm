@@ -30,4 +30,3 @@ go.work.sum
 .idea/
 docker/.data*
 /coverage.out
-/docs

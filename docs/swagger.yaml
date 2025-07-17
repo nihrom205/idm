@@ -1,0 +1,515 @@
+basePath: /api/v1/
+definitions:
+  employee.CreateRequest:
+    properties:
+      name:
+        maxLength: 155
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  employee.DeleteByIdsRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - ids
+    type: object
+  employee.FindByIdsRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - ids
+    type: object
+  employee.Response:
+    properties:
+      create_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      update_at:
+        type: string
+    type: object
+  github_com_nihrom205_idm_inner_common.Response-employee_Response:
+    properties:
+      data:
+        $ref: '#/definitions/employee.Response'
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  github_com_nihrom205_idm_inner_common.Response-int64:
+    properties:
+      data:
+        type: integer
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  github_com_nihrom205_idm_inner_common.Response-role_Response:
+    properties:
+      data:
+        $ref: '#/definitions/role.Response'
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  github_com_nihrom205_idm_inner_common.Response-string:
+    properties:
+      data:
+        type: string
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  role.CreateRequest:
+    properties:
+      name:
+        maxLength: 155
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  role.DeleteByIdsRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - ids
+    type: object
+  role.FindByIdsRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - ids
+    type: object
+  role.Response:
+    properties:
+      create_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      update_at:
+        type: string
+    type: object
+info:
+  contact: {}
+  title: IDM API documentation
+paths:
+  /employees:
+    get:
+      consumes:
+      - application/json
+      description: Get all employee.
+      operationId: get-all-employee
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-employee_Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: get all employee
+      tags:
+      - employee
+    post:
+      consumes:
+      - application/json
+      description: Create a new employee.
+      operationId: create-employee
+      parameters:
+      - description: name employee
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/employee.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-int64'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: create a new employee
+      tags:
+      - employee
+  /employees/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete employee by id.
+      operationId: delete-employee-by-id
+      parameters:
+      - description: id employee
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-int64'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: delete employee by id
+      tags:
+      - employee
+    get:
+      consumes:
+      - application/json
+      description: Get employee.
+      operationId: get-employee
+      parameters:
+      - description: id employee
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-employee_Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: get employee
+      tags:
+      - employee
+  /employees/ids:
+    delete:
+      consumes:
+      - application/json
+      description: Delete employee by list ids.
+      operationId: delete-employee-by-list-ids
+      parameters:
+      - description: ids employee
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/employee.DeleteByIdsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-int64'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: delete employee by list ids
+      tags:
+      - employee
+    post:
+      consumes:
+      - application/json
+      description: Get employee by id.
+      operationId: get-employee-by-id
+      parameters:
+      - description: ids employee
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/employee.FindByIdsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-employee_Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: get employee by id
+      tags:
+      - employee
+  /employees/page:
+    get:
+      consumes:
+      - application/json
+      description: Get employee by pagination.
+      operationId: get-employee-by-pagination
+      parameters:
+      - description: Number page (start with 0)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: Size page (default 1)
+        in: query
+        name: pageSize
+        type: integer
+      - description: Size page (default 1)
+        in: query
+        name: textFilter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-employee_Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: get employee by pagination
+      tags:
+      - employee
+  /role:
+    post:
+      consumes:
+      - application/json
+      description: Create a new role.
+      operationId: create-role
+      parameters:
+      - description: name role
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/role.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-int64'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: create a new role
+      tags:
+      - role
+  /role/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete role by id.
+      operationId: delete-role-by-id
+      parameters:
+      - description: id role
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-int64'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: delete role by id
+      tags:
+      - role
+  /role/ids:
+    delete:
+      consumes:
+      - application/json
+      description: Delete role by list ids.
+      operationId: delete-role-by-list-ids
+      parameters:
+      - description: ids role
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/role.DeleteByIdsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-int64'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: delete role by list ids
+      tags:
+      - role
+  /roles:
+    get:
+      consumes:
+      - application/json
+      description: Get all role.
+      operationId: get-all-role
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-role_Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: get all role
+      tags:
+      - role
+  /roles/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get role.
+      operationId: get-role
+      parameters:
+      - description: id role
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-role_Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: get role
+      tags:
+      - role
+  /roles/ids:
+    post:
+      consumes:
+      - application/json
+      description: Get role by id.
+      operationId: get-role-by-id
+      parameters:
+      - description: ids role
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/role.FindByIdsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-role_Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      summary: get role by id
+      tags:
+      - role
+swagger: "2.0"
