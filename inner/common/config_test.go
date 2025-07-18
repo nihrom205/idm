@@ -44,6 +44,14 @@ func TestGetConfigWhenNotFoundEnvReturnEnvironmentVariable(t *testing.T) {
 	if err != nil {
 		return
 	}
+	err = os.Setenv("SSL_CERT", "test_cert")
+	if err != nil {
+		return
+	}
+	err = os.Setenv("SSL_KEY", "test_key")
+	if err != nil {
+		return
+	}
 	defer func() {
 		err := os.Unsetenv(db_dsn)
 		if err != nil {
