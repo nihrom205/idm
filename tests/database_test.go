@@ -32,7 +32,9 @@ func TestConnectWithCfgWhenCorrectDSNThenReturnConnect(t *testing.T) {
 			"APP_NAME=idm_test\n"+
 			"APP_VERSION=0.0.1\n"+
 			"LOG_LEVEL=INFO\n"+
-			"LOG_DEVELOP_MODE=true"), 0644)
+			"LOG_DEVELOP_MODE=true\n"+
+			"SSL_CERT=test.cert\n"+
+			"SSL_KEY=test.key"), 0644)
 	if err != nil {
 		return
 	}

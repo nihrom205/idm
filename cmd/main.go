@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"github.com/nihrom205/idm/docs"
 	"github.com/nihrom205/idm/inner/common"
 	validator2 "github.com/nihrom205/idm/inner/common/validator"
@@ -32,7 +33,23 @@ func main() {
 
 	server := build(cfg, logger)
 	go func() {
-		if err := server.App.Listen(":8080"); err != nil {
+		// загружаем сертификаты
+		cer, err := tls.LoadX509KeyPair(cfg.SslCert, cfg.SslKey)
+		if err != nil {
+			logger.Panic("failed certificate loading: %s", zap.Error(err))
+		}
+
+		// создаём конфигурацию TLS сервера
+		tlsConfig := &tls.Config{Certificates: []tls.Certificate{cer}}
+
+		// создаём слушателя https соединения
+		ln, err := tls.Listen("tcp", ":8080", tlsConfig)
+		if err != nil {
+			logger.Panic("failed TLS listener creating: %s", zap.Error(err))
+		}
+
+		// запускаем веб-сервер с новым TLS слушателем
+		if err := server.App.Listener(ln); err != nil {
 			logger.Panic("error starting server", zap.Error(err))
 		}
 	}()
