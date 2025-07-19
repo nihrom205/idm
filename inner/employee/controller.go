@@ -234,10 +234,13 @@ func (c *Controller) GetPageEmployee(ctx fiber.Ctx) error {
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
 
+	textFilter := ctx.Query("textFilter", "")
+
 	// идем в бд за данными
 	request := PageRequest{
 		PageSize:   pageSize,
 		PageNumber: pageNumber,
+		TextFilter: textFilter,
 	}
 	c.logger.Debug("get page employee by pageNumber and pageSize", zap.Any("request", request))
 
