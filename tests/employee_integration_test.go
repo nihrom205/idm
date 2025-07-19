@@ -31,7 +31,6 @@ func TestGetPageEmployee(t *testing.T) {
 	fixture := NewFixtureEmployee(employeeRepo)
 	defer func() {
 		clearDatabaseEmployee(db)
-		clearDatabaseRole(db)
 	}()
 
 	names := []string{"Ivan", "Stas", "Stepan", "Viktor", "Stas2"}
