@@ -3,7 +3,7 @@ package role
 import (
 	"context"
 	"errors"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/web"
 	"go.uber.org/zap"
@@ -44,11 +44,22 @@ func (c *Controller) RegisterRoutes() {
 }
 
 // функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/role"
-func (c *Controller) CreateRole(ctx fiber.Ctx) error {
+// @Description Create a new role.
+// @Summary create a new role
+// @ID create-role
+// @Tags role
+// @Accept json
+// @Produce json
+// @Param request body role.CreateRequest true "name role"
+// @Success 200 {object} common.Response[int64]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /role [post]
+func (c *Controller) CreateRole(ctx *fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру CreateRequest
 	var request CreateRequest
-	if err := ctx.Bind().Body(&request); err != nil {
+	if err := ctx.BodyParser(&request); err != nil {
 		c.logger.Error("create role: received request", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
@@ -80,7 +91,18 @@ func (c *Controller) CreateRole(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/roles/:id"
-func (c *Controller) GetRole(ctx fiber.Ctx) error {
+// @Description Get role.
+// @Summary get role
+// @ID get-role
+// @Tags role
+// @Accept json
+// @Produce json
+// @Param id path int64 true "id role"
+// @Success 200 {object} common.Response[role.Response]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /roles/{id} [get]
+func (c *Controller) GetRole(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -116,7 +138,17 @@ func (c *Controller) GetRole(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при GET запросе по маршруту "/api/v1/roles"
-func (c *Controller) GetAllRoles(ctx fiber.Ctx) error {
+// @Description Get all role.
+// @Summary get all role
+// @ID get-all-role
+// @Tags role
+// @Accept json
+// @Produce json
+// @Success 200 {object} common.Response[role.Response]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /roles [get]
+func (c *Controller) GetAllRoles(ctx *fiber.Ctx) error {
 
 	// вызываем метод GetAll сервиса role.Service
 	response, err := c.roleService.GetAll(ctx.Context())
@@ -134,11 +166,22 @@ func (c *Controller) GetAllRoles(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при POST запросе по маршруту "/api/v1/roles/ids"
-func (c *Controller) GetRoleByIds(ctx fiber.Ctx) error {
+// @Description Get role by id.
+// @Summary get role by id
+// @ID get-role-by-id
+// @Tags role
+// @Accept json
+// @Produce json
+// @Param ids body role.FindByIdsRequest true "ids role"
+// @Success 200 {object} common.Response[role.Response]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /roles/ids [post]
+func (c *Controller) GetRoleByIds(ctx *fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру FindByIdsRequest
 	var request FindByIdsRequest
-	if err := ctx.Bind().Body(&request); err != nil {
+	if err := ctx.BodyParser(&request); err != nil {
 		c.logger.Error("get role: received request", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
@@ -160,7 +203,18 @@ func (c *Controller) GetRoleByIds(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/roles/:id"
-func (c *Controller) DeleteRole(ctx fiber.Ctx) error {
+// @Description Delete role by id.
+// @Summary delete role by id
+// @ID delete-role-by-id
+// @Tags role
+// @Accept json
+// @Produce json
+// @Param id path int64 true "id role"
+// @Success 200 {object} common.Response[int64]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /role/{id} [delete]
+func (c *Controller) DeleteRole(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -194,11 +248,22 @@ func (c *Controller) DeleteRole(ctx fiber.Ctx) error {
 }
 
 // функция-хендлер, которая будет вызываться при DELETE запросе по маршруту "/api/v1/roles/ids"
-func (c *Controller) DeleteRolesByIds(ctx fiber.Ctx) error {
+// @Description Delete role by list ids.
+// @Summary delete role by list ids
+// @ID delete-role-by-list-ids
+// @Tags role
+// @Accept json
+// @Produce json
+// @Param ids body role.DeleteByIdsRequest true "ids role"
+// @Success 200 {object} common.Response[int64]
+// @Failure 400 {object} common.Response[string]
+// @Failure 500 {object} common.Response[string]
+// @Router /role/ids [delete]
+func (c *Controller) DeleteRolesByIds(ctx *fiber.Ctx) error {
 
 	// анмаршалим JSON body запроса в структуру DeleteByIdsRequest
 	var request DeleteByIdsRequest
-	if err := ctx.Bind().Body(&request); err != nil {
+	if err := ctx.BodyParser(&request); err != nil {
 		c.logger.Error("delete roles: received request", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}

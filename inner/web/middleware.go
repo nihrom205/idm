@@ -1,16 +1,16 @@
 package web
 
 import (
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/logger"
-	"github.com/gofiber/fiber/v3/middleware/recover"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/google/uuid"
 )
 
 func registerMiddleware(app *fiber.App) {
 	app.Use(recover.New())
 	//app.Use(requestid.New())
-	app.Use(func(c fiber.Ctx) error {
+	app.Use(func(c *fiber.Ctx) error {
 		requestID := c.Get("X-Request-ID")
 		if requestID == "" {
 			requestID = uuid.NewString()

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/nihrom205/idm/docs"
 	"github.com/nihrom205/idm/inner/common"
 	validator2 "github.com/nihrom205/idm/inner/common/validator"
 	database2 "github.com/nihrom205/idm/inner/database"
@@ -16,9 +17,14 @@ import (
 	"time"
 )
 
+// @title IDM API documentation
+// @BasePath /api/v1/
 func main() {
 	// читаем конфиги
 	cfg := common.GetConfig(".env")
+	// Переопределяем версию приложения, которая будет отображаться в swagger UI.
+	// Пакет docs и структура SwaggerInfo в нём появятся поле генерации документации (см. далее).
+	docs.SwaggerInfo.Version = cfg.AppVersion
 	// Создаем логгер
 	logger := common.NewLogger(cfg)
 	// Отложенный вызов записи сообщений из буфера в лог. Необходимо вызывать перед выходом из приложения
