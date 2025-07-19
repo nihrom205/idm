@@ -1,5 +1,9 @@
 version: "3.9"
 
+#volumes:
+#  data:
+#  export:
+#  keycloak_data:
 networks:
   idm_network:
 
@@ -18,6 +22,47 @@ services:
       - "5432:5432"
     networks:
       - idm_network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: '512M'
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.1
+    ports:
+      - "9990:8080"
+      - "9991:8443"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_PROXY: edge
+      KC_METRICS_ENABLED: "false"
+      KC_HEALTH_ENABLED: "false"
+      KC_DB: postgres
+      KC_DB_URL_HOST: idm-db
+      KC_DB_URL_PORT: 5432
+      KC_DB_SCHEMA: public
+      KC_DB_URL_DATABASE: keycloak_db
+      KC_DB_USERNAME: user
+      KC_DB_PASSWORD: user
+      KC_LOG_LEVEL: INFO
+    depends_on:
+      - postgres
+    command:
+      - start-dev
+    volumes:
+      - .keycloak_data:/opt/keycloak/data
+      - ./auth/import:/opt/keycloak/data/import
+    networks:
+      - idm_network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9990/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
 
   postgres_test:
     container_name: postgres_container_test
