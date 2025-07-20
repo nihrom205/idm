@@ -28,5 +28,5 @@ go.work.sum
 .env
 
 .idea/
-docker/.data*
+docker/.*data*
 /coverage.out

@@ -3,6 +3,8 @@ package tests
 import (
 	"context"
 	"github.com/jmoiron/sqlx"
+	redisCache "github.com/nihrom205/idm/inner/cache"
+	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/database"
 	"github.com/nihrom205/idm/inner/employee"
 	"github.com/nihrom205/idm/inner/role"
@@ -40,6 +42,7 @@ func createTableRole(db *sqlx.DB) {
 
 func TestRepositoryEmployee(t *testing.T) {
 	a := assert.New(t)
+	cfg := common.GetConfig(".env")
 	db := database.Connect()
 	createTableEmployee(db)
 
@@ -49,7 +52,9 @@ func TestRepositoryEmployee(t *testing.T) {
 		}
 	}()
 
-	employeeRepository := employee.NewEmployeeRepository(db)
+	cache := redisCache.NewRedisCache(cfg.RedisAddr)
+
+	employeeRepository := employee.NewEmployeeRepository(cache, db)
 
 	fixture := NewFixtureEmployee(employeeRepository)
 
@@ -163,6 +168,7 @@ func TestRepositoryEmployee(t *testing.T) {
 
 func TestRepositoryRole(t *testing.T) {
 	a := assert.New(t)
+	cfg := common.GetConfig(".env")
 	db := database.Connect()
 	createTableRole(db)
 
@@ -172,7 +178,9 @@ func TestRepositoryRole(t *testing.T) {
 		}
 	}()
 
-	roleRepository := role.NewRoleRepository(db)
+	cache := redisCache.NewRedisCache(cfg.RedisAddr)
+
+	roleRepository := role.NewRoleRepository(cache, db)
 
 	fixture := NewFixtureRole(roleRepository)
 
