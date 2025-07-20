@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"github.com/nihrom205/idm/docs"
+	redisCache "github.com/nihrom205/idm/inner/cache"
 	"github.com/nihrom205/idm/inner/common"
 	validator2 "github.com/nihrom205/idm/inner/common/validator"
 	database2 "github.com/nihrom205/idm/inner/database"
@@ -23,9 +24,11 @@ import (
 func main() {
 	// читаем конфиги
 	cfg := common.GetConfig(".env")
+
 	// Переопределяем версию приложения, которая будет отображаться в swagger UI.
 	// Пакет docs и структура SwaggerInfo в нём появятся поле генерации документации (см. далее).
 	docs.SwaggerInfo.Version = cfg.AppVersion
+
 	// Создаем логгер
 	logger := common.NewLogger(cfg)
 	// Отложенный вызов записи сообщений из буфера в лог. Необходимо вызывать перед выходом из приложения
@@ -91,9 +94,12 @@ func build(cfg common.Config, logger *common.Logger) *web.Server {
 	// создаём веб-сервер
 	server := web.NewServer()
 
+	// Инициализация кэша
+	cache := redisCache.NewRedisCache(cfg.RedisAddr)
+
 	// создаём репозиторий
-	employeeRepo := employee.NewEmployeeRepository(db)
-	roleRepo := role.NewRoleRepository(db)
+	employeeRepo := employee.NewEmployeeRepository(cache, db)
+	roleRepo := role.NewRoleRepository(cache, db)
 
 	// создаём валидатор
 	vld := validator2.NewValidator()

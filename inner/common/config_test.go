@@ -52,6 +52,10 @@ func TestGetConfigWhenNotFoundEnvReturnEnvironmentVariable(t *testing.T) {
 	if err != nil {
 		return
 	}
+	err = os.Setenv("REDIS_ADDR", "url")
+	if err != nil {
+		return
+	}
 	defer func() {
 		err := os.Unsetenv(db_dsn)
 		if err != nil {

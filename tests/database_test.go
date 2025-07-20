@@ -34,7 +34,8 @@ func TestConnectWithCfgWhenCorrectDSNThenReturnConnect(t *testing.T) {
 			"LOG_LEVEL=INFO\n"+
 			"LOG_DEVELOP_MODE=true\n"+
 			"SSL_CERT=test.cert\n"+
-			"SSL_KEY=test.key"), 0644)
+			"SSL_KEY=test.key\n"+
+			"REDIS_ADDR=localhost:6379"), 0644)
 	if err != nil {
 		return
 	}

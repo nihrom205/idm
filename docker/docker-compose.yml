@@ -1,9 +1,10 @@
 version: "3.9"
 
-#volumes:
-#  data:
+volumes:
+#  pg_data:
 #  export:
 #  keycloak_data:
+  redis_data:
 networks:
   idm_network:
 
@@ -17,7 +18,7 @@ services:
       POSTGRES_USER: 'user'
       POSTGRES_PASSWORD: 'user'
     volumes:
-      - .data:/var/lib/postgresql/data
+      - .pg_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
@@ -64,3 +65,14 @@ services:
       timeout: 10s
       retries: 3
     restart: unless-stopped
+
+  redis:
+    container_name: redis_container_idm
+    image: redis:7.4.5-alpine3.21
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+    volumes:
+      - redis_data:/data

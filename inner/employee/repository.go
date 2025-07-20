@@ -3,19 +3,26 @@ package employee
 import (
 	"context"
 	"fmt"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"github.com/nihrom205/idm/inner/cache"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
+const EMPLOYEE = "employee"
+
 type Repository struct {
-	db *sqlx.DB
+	cache *cache.RedisCache
+	db    *sqlx.DB
 }
 
-func NewEmployeeRepository(db *sqlx.DB) *Repository {
+func NewEmployeeRepository(cache *cache.RedisCache, db *sqlx.DB) *Repository {
 	return &Repository{
-		db: db,
+		cache: cache,
+		db:    db,
 	}
 }
 
@@ -34,8 +41,24 @@ func (r *Repository) CreateTx(ctx context.Context, tx *sqlx.Tx, employee Entity)
 
 // найти элемент коллекции по его id
 func (r *Repository) FindById(ctx context.Context, id int64) (employee Entity, err error) {
+	cacheKey := r.cache.GetCacheKey(EMPLOYEE, id)
+
+	// Пробуем получить из кэша
+	if found := r.cache.Get(ctx, cacheKey, &employee); found {
+		return employee, nil
+	}
+
+	// получаем из БД
 	query := "SELECT * FROM employee WHERE id=$1"
 	err = r.db.GetContext(ctx, &employee, query, id)
+	if err == nil {
+		// сохраняем в cache
+		errCache := r.cache.Set(ctx, cacheKey, employee, time.Minute*5)
+		if errCache != nil {
+			log.Errorf("error caching employee: %v", errCache.Error())
+		}
+	}
+
 	return employee, err
 }
 
@@ -64,6 +87,12 @@ func (r *Repository) FindByIds(ctx context.Context, ids []int64) ([]Entity, erro
 func (r *Repository) DeleteById(ctx context.Context, id int64) error {
 	query := "DELETE FROM employee WHERE id=$1"
 	_, err := r.db.ExecContext(ctx, query, id)
+
+	errCache := r.cache.InvalidateCache(ctx, r.cache.GetCacheKey(EMPLOYEE, id))
+	if errCache != nil {
+		log.Errorf("error caching employee: %v", errCache.Error())
+	}
+
 	return err
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	redisCache "github.com/nihrom205/idm/inner/cache"
 	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/common/validator"
 	"github.com/nihrom205/idm/inner/database"
@@ -27,7 +28,8 @@ func TestGetPageEmployee(t *testing.T) {
 		}
 	}()
 
-	employeeRepo := employee.NewEmployeeRepository(db)
+	cache := redisCache.NewRedisCache(cfg.RedisAddr)
+	employeeRepo := employee.NewEmployeeRepository(cache, db)
 	fixture := NewFixtureEmployee(employeeRepo)
 	defer func() {
 		clearDatabaseEmployee(db)
@@ -181,8 +183,10 @@ func initTestApp(db *sqlx.DB) *fiber.App {
 	// Валидатор
 	vld := validator.NewValidator()
 
+	cache := redisCache.NewRedisCache(cfg.RedisAddr)
+
 	// Репозиторий и сервис
-	employeeRepo := employee.NewEmployeeRepository(db)
+	employeeRepo := employee.NewEmployeeRepository(cache, db)
 	employeeService := employee.NewService(employeeRepo, vld)
 
 	// Создаем сервер и контроллер
