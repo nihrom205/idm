@@ -1,5 +1,5 @@
 dc:
-	docker-compose -f docker/docker-compose.yml up  --remove-orphans --build
+	docker-compose -f docker/docker-compose.yml up  --remove-orphans --build -d
 
 build:
 	go build -o app_port cmd/main.go
