@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/web"
 	"github.com/stretchr/testify/assert"
@@ -60,11 +61,23 @@ func TestController_CreateRole(t *testing.T) {
 	logger := &common.Logger{
 		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
 	}
+	// создаём тестовый токен аутентификации с ролью web.IdmAdmin
+	claims := &web.IdmClaims{
+		RealmAccess: web.RealmAccessClaims{
+			Roles: []string{web.IdmAdmin},
+		},
+	}
+	// создаём stub middleware для аутентификации
+	auth := func(c *fiber.Ctx) error {
+		c.Locals(web.JwtKey, &jwt.Token{Claims: claims})
+		return c.Next()
+	}
 
 	// тестируем положительный сценарий: работника создали и получили его id
 	t.Run("should return created role id", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -97,6 +110,7 @@ func TestController_CreateRole(t *testing.T) {
 	t.Run("should return error if role already exists", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -130,6 +144,7 @@ func TestController_CreateRole(t *testing.T) {
 	t.Run("should return error validator error", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -163,6 +178,7 @@ func TestController_CreateRole(t *testing.T) {
 	t.Run("should return error transaction", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -195,6 +211,7 @@ func TestController_CreateRole(t *testing.T) {
 	t.Run("should return error unmarshal", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -231,10 +248,22 @@ func TestController_GetEmployee(t *testing.T) {
 	logger := &common.Logger{
 		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
 	}
+	// создаём тестовый токен аутентификации с ролью web.IdmAdmin
+	claims := &web.IdmClaims{
+		RealmAccess: web.RealmAccessClaims{
+			Roles: []string{web.IdmAdmin},
+		},
+	}
+	// создаём stub middleware для аутентификации
+	auth := func(c *fiber.Ctx) error {
+		c.Locals(web.JwtKey, &jwt.Token{Claims: claims})
+		return c.Next()
+	}
 
 	t.Run("should return employee", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -273,6 +302,7 @@ func TestController_GetEmployee(t *testing.T) {
 	t.Run("should return err bad id", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -300,6 +330,7 @@ func TestController_GetEmployee(t *testing.T) {
 	t.Run("should return err validation", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -330,6 +361,7 @@ func TestController_GetEmployee(t *testing.T) {
 	t.Run("should return err transaction", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -360,6 +392,7 @@ func TestController_GetEmployee(t *testing.T) {
 	t.Run("should return err not found", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -390,6 +423,7 @@ func TestController_GetEmployee(t *testing.T) {
 	t.Run("should return err", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -424,10 +458,22 @@ func TestController_GetAllRoles(t *testing.T) {
 	logger := &common.Logger{
 		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
 	}
+	// создаём тестовый токен аутентификации с ролью web.IdmAdmin
+	claims := &web.IdmClaims{
+		RealmAccess: web.RealmAccessClaims{
+			Roles: []string{web.IdmAdmin},
+		},
+	}
+	// создаём stub middleware для аутентификации
+	auth := func(c *fiber.Ctx) error {
+		c.Locals(web.JwtKey, &jwt.Token{Claims: claims})
+		return c.Next()
+	}
 
 	t.Run("should success get all roles", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -474,6 +520,7 @@ func TestController_GetAllRoles(t *testing.T) {
 	t.Run("should return err", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -511,10 +558,22 @@ func TestController_GetEmployeeByIds(t *testing.T) {
 	logger := &common.Logger{
 		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
 	}
+	// создаём тестовый токен аутентификации с ролью web.IdmAdmin
+	claims := &web.IdmClaims{
+		RealmAccess: web.RealmAccessClaims{
+			Roles: []string{web.IdmAdmin},
+		},
+	}
+	// создаём stub middleware для аутентификации
+	auth := func(c *fiber.Ctx) error {
+		c.Locals(web.JwtKey, &jwt.Token{Claims: claims})
+		return c.Next()
+	}
 
 	t.Run("should success get all roles by ids", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -562,6 +621,7 @@ func TestController_GetEmployeeByIds(t *testing.T) {
 	t.Run("should return err", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -600,10 +660,22 @@ func TestController_DeleteEmployee(t *testing.T) {
 	logger := &common.Logger{
 		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
 	}
+	// создаём тестовый токен аутентификации с ролью web.IdmAdmin
+	claims := &web.IdmClaims{
+		RealmAccess: web.RealmAccessClaims{
+			Roles: []string{web.IdmAdmin},
+		},
+	}
+	// создаём stub middleware для аутентификации
+	auth := func(c *fiber.Ctx) error {
+		c.Locals(web.JwtKey, &jwt.Token{Claims: claims})
+		return c.Next()
+	}
 
 	t.Run("should success del by id", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -634,6 +706,7 @@ func TestController_DeleteEmployee(t *testing.T) {
 	t.Run("should success err invalid id", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -665,10 +738,22 @@ func TestController_DeleteRolesByIds(t *testing.T) {
 	logger := &common.Logger{
 		Logger: zap.NewNop(), // Логгер, который ничего не делает (подходит для тестов),
 	}
+	// создаём тестовый токен аутентификации с ролью web.IdmAdmin
+	claims := &web.IdmClaims{
+		RealmAccess: web.RealmAccessClaims{
+			Roles: []string{web.IdmAdmin},
+		},
+	}
+	// создаём stub middleware для аутентификации
+	auth := func(c *fiber.Ctx) error {
+		c.Locals(web.JwtKey, &jwt.Token{Claims: claims})
+		return c.Next()
+	}
 
 	t.Run("should success del by ids", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -700,6 +785,7 @@ func TestController_DeleteRolesByIds(t *testing.T) {
 	t.Run("should err bad request", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
@@ -728,6 +814,7 @@ func TestController_DeleteRolesByIds(t *testing.T) {
 	t.Run("should success del by ids", func(t *testing.T) {
 		// Готовим тестовое окружение
 		server := web.NewServer()
+		server.GroupApi.Use(auth)
 		svc := &MockService{}
 		controller := NewController(server, svc, logger)
 		controller.RegisterRoutes()
