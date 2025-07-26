@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/web"
 	"go.uber.org/zap"
+	"slices"
 	"strconv"
 )
 
@@ -50,12 +52,24 @@ func (c *Controller) RegisterRoutes() {
 // @Tags role
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param request body role.CreateRequest true "name role"
 // @Success 200 {object} common.Response[int64]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /role [post]
 func (c *Controller) CreateRole(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// анмаршалим JSON body запроса в структуру CreateRequest
 	var request CreateRequest
@@ -97,12 +111,25 @@ func (c *Controller) CreateRole(ctx *fiber.Ctx) error {
 // @Tags role
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int64 true "id role"
 // @Success 200 {object} common.Response[role.Response]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /roles/{id} [get]
 func (c *Controller) GetRole(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) &&
+		!slices.Contains(claims.RealmAccess.Roles, web.IdmUser) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -144,11 +171,24 @@ func (c *Controller) GetRole(ctx *fiber.Ctx) error {
 // @Tags role
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {object} common.Response[role.Response]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /roles [get]
 func (c *Controller) GetAllRoles(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) &&
+		!slices.Contains(claims.RealmAccess.Roles, web.IdmUser) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// вызываем метод GetAll сервиса role.Service
 	response, err := c.roleService.GetAll(ctx.Context())
@@ -172,12 +212,25 @@ func (c *Controller) GetAllRoles(ctx *fiber.Ctx) error {
 // @Tags role
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param ids body role.FindByIdsRequest true "ids role"
 // @Success 200 {object} common.Response[role.Response]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /roles/ids [post]
 func (c *Controller) GetRoleByIds(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) &&
+		!slices.Contains(claims.RealmAccess.Roles, web.IdmUser) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// анмаршалим JSON body запроса в структуру FindByIdsRequest
 	var request FindByIdsRequest
@@ -209,12 +262,24 @@ func (c *Controller) GetRoleByIds(ctx *fiber.Ctx) error {
 // @Tags role
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int64 true "id role"
 // @Success 200 {object} common.Response[int64]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /role/{id} [delete]
 func (c *Controller) DeleteRole(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -254,12 +319,24 @@ func (c *Controller) DeleteRole(ctx *fiber.Ctx) error {
 // @Tags role
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param ids body role.DeleteByIdsRequest true "ids role"
 // @Success 200 {object} common.Response[int64]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /role/ids [delete]
 func (c *Controller) DeleteRolesByIds(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// анмаршалим JSON body запроса в структуру DeleteByIdsRequest
 	var request DeleteByIdsRequest
@@ -270,7 +347,7 @@ func (c *Controller) DeleteRolesByIds(ctx *fiber.Ctx) error {
 	c.logger.Debug("delete roles by ids", zap.Any("request", request))
 
 	// вызываем метод DeleteByIds сервиса role.Service
-	err := c.roleService.DeleteByIds(ctx.Context(), request.Ids)
+	err = c.roleService.DeleteByIds(ctx.Context(), request.Ids)
 	if err != nil {
 		c.logger.Error("delete roles", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
@@ -282,4 +359,16 @@ func (c *Controller) DeleteRolesByIds(ctx *fiber.Ctx) error {
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
+}
+
+func getClaims(ctx *fiber.Ctx) (*web.IdmClaims, error) {
+	token, ok := ctx.Locals(web.JwtKey).(*jwt.Token)
+	if !ok || token == nil {
+		return nil, errors.New("missing or invalid token")
+	}
+	claims, ok := token.Claims.(*web.IdmClaims)
+	if !ok || claims == nil {
+		return nil, errors.New("missing or invalid claims")
+	}
+	return claims, nil
 }

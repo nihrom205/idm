@@ -116,9 +116,12 @@ definitions:
       update_at:
         type: string
     type: object
+host: localhost:8080
 info:
   contact: {}
+  description: Swagger UI на Fiber
   title: IDM API documentation
+  version: 0.0.1
 paths:
   /employees:
     get:
@@ -137,10 +140,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: get all employee
       tags:
       - employee
@@ -167,10 +180,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: create a new employee
       tags:
       - employee
@@ -198,10 +221,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: delete employee by id
       tags:
       - employee
@@ -228,10 +261,24 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: get employee
       tags:
       - employee
@@ -259,10 +306,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: delete employee by list ids
       tags:
       - employee
@@ -289,10 +346,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: get employee by id
       tags:
       - employee
@@ -326,10 +393,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: get employee by pagination
       tags:
       - employee
@@ -357,10 +434,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: create a new role
       tags:
       - role
@@ -388,10 +475,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: delete role by id
       tags:
       - role
@@ -419,10 +516,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: delete role by list ids
       tags:
       - role
@@ -443,10 +550,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: get all role
       tags:
       - role
@@ -474,10 +591,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: get role
       tags:
       - role
@@ -505,11 +632,26 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/github_com_nihrom205_idm_inner_common.Response-string'
+      security:
+      - BearerAuth: []
       summary: get role by id
       tags:
       - role
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -2,16 +2,21 @@ package web
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/swagger"
 	_ "github.com/nihrom205/idm/docs" // обязательно импортируем наш пакет с документацией
 )
 
 type Server struct {
 	App *fiber.App
 	// группа публичного API
+	GroupApi fiber.Router
+	// группа публичного API первой версии
 	GroupApiV1 fiber.Router
 	// группа непубличного API
 	GroupInternal fiber.Router
+}
+
+type AuthMiddlewareInterface interface {
+	ProtectWithJwt() func(*fiber.Ctx) error
 }
 
 func NewServer() *Server {
@@ -21,9 +26,6 @@ func NewServer() *Server {
 	// подключаем middleware
 	registerMiddleware(app)
 
-	// Swagger UI
-	app.Get("/swagger/*", swagger.HandlerDefault)
-
 	groupInternal := app.Group("/internal")
 
 	groupApi := app.Group("/api")
@@ -32,6 +34,7 @@ func NewServer() *Server {
 
 	return &Server{
 		App:           app,
+		GroupApi:      groupApi,
 		GroupApiV1:    groupApiV1,
 		GroupInternal: groupInternal,
 	}
