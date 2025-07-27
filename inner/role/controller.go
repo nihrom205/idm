@@ -74,15 +74,15 @@ func (c *Controller) CreateRole(ctx *fiber.Ctx) error {
 	// анмаршалим JSON body запроса в структуру CreateRequest
 	var request CreateRequest
 	if err := ctx.BodyParser(&request); err != nil {
-		c.logger.Error("create role: received request", zap.Any("request", request))
+		c.logger.ErrorCtx(ctx.Context(), "create role: received request", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
-	c.logger.Debug("create role", zap.Any("request", request))
+	c.logger.DebugCtx(ctx.Context(), "create role", zap.Any("request", request))
 
 	// вызываем метод Create сервиса role.Service
 	newEmployeeId, err := c.roleService.Create(ctx.Context(), request)
 	if err != nil {
-		c.logger.Error("create role", zap.Any("request", request))
+		c.logger.ErrorCtx(ctx.Context(), "create role", zap.Any("request", request))
 		switch {
 		// если сервис возвращает ошибку RequestValidationError или AlreadyExistsError,
 		// то мы возвращаем ответ с кодом 400 (BadRequest)
@@ -97,7 +97,7 @@ func (c *Controller) CreateRole(ctx *fiber.Ctx) error {
 
 	// функция OkResponse() формирует и направляет ответ в случае успеха
 	if err = common.OkResponse(ctx, newEmployeeId); err != nil {
-		c.logger.Error("create role", zap.Any("request", request))
+		c.logger.ErrorCtx(ctx.Context(), "create role", zap.Any("request", request))
 		_ = common.ErrResponse(ctx, fiber.StatusInternalServerError, "error returning created employee id")
 		return err
 	}
@@ -133,17 +133,17 @@ func (c *Controller) GetRole(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
-	c.logger.Debug("get role", zap.Any("idParam", idParam))
+	c.logger.DebugCtx(ctx.Context(), "get role", zap.Any("idParam", idParam))
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		c.logger.Error("get role: invalid id param", zap.Any("idParam", idParam))
+		c.logger.ErrorCtx(ctx.Context(), "get role: invalid id param", zap.Any("idParam", idParam))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid employee id")
 	}
 
 	// вызываем метод FindById сервиса role.Service
 	response, err := c.roleService.FindById(ctx.Context(), id)
 	if err != nil {
-		c.logger.Error("get role", zap.Any("request", idParam))
+		c.logger.ErrorCtx(ctx.Context(), "get role", zap.Any("request", idParam))
 		switch {
 		case errors.As(err, &common.RequestValidatorError{}):
 			return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
@@ -158,7 +158,7 @@ func (c *Controller) GetRole(ctx *fiber.Ctx) error {
 
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, response); err != nil {
-		c.logger.Error("get role", zap.Any("request", idParam))
+		c.logger.ErrorCtx(ctx.Context(), "get role", zap.Any("request", idParam))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
@@ -193,13 +193,13 @@ func (c *Controller) GetAllRoles(ctx *fiber.Ctx) error {
 	// вызываем метод GetAll сервиса role.Service
 	response, err := c.roleService.GetAll(ctx.Context())
 	if err != nil {
-		c.logger.Error("get all roles", zap.Any("request", err))
+		c.logger.ErrorCtx(ctx.Context(), "get all roles", zap.Any("request", err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, response); err != nil {
-		c.logger.Error("get all roles", zap.Any("request", err))
+		c.logger.ErrorCtx(ctx.Context(), "get all roles", zap.Any("request", err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
@@ -235,21 +235,21 @@ func (c *Controller) GetRoleByIds(ctx *fiber.Ctx) error {
 	// анмаршалим JSON body запроса в структуру FindByIdsRequest
 	var request FindByIdsRequest
 	if err := ctx.BodyParser(&request); err != nil {
-		c.logger.Error("get role: received request", zap.Any("request", request))
+		c.logger.ErrorCtx(ctx.Context(), "get role: received request", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
-	c.logger.Debug("get role by ids", zap.Any("request", request))
+	c.logger.DebugCtx(ctx.Context(), "get role by ids", zap.Any("request", request))
 
 	// вызываем метод FindByIds сервиса role.Service
 	response, err := c.roleService.FindByIds(ctx.Context(), request.Ids)
 	if err != nil {
-		c.logger.Error("get role", zap.Any("request", request))
+		c.logger.ErrorCtx(ctx.Context(), "get role", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, response); err != nil {
-		c.logger.Error("get role", zap.Any("request", request))
+		c.logger.ErrorCtx(ctx.Context(), "get role", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
@@ -283,17 +283,17 @@ func (c *Controller) DeleteRole(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
-	c.logger.Debug("delete role", zap.Any("idParam", idParam))
+	c.logger.DebugCtx(ctx.Context(), "delete role", zap.Any("idParam", idParam))
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		c.logger.Error("delete role: invalid id param", zap.Any("idParam", idParam))
+		c.logger.ErrorCtx(ctx.Context(), "delete role: invalid id param", zap.Any("idParam", idParam))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid employee id")
 	}
 
 	// вызываем метод DeleteById сервиса role.Service
 	err = c.roleService.DeleteById(ctx.Context(), id)
 	if err != nil {
-		c.logger.Error("delete role", zap.Any("request", idParam))
+		c.logger.ErrorCtx(ctx.Context(), "delete role", zap.Any("request", idParam))
 		switch {
 		case errors.As(err, &common.RequestValidatorError{}):
 			return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
@@ -306,7 +306,7 @@ func (c *Controller) DeleteRole(ctx *fiber.Ctx) error {
 		}
 	}
 	if err := common.OkResponse(ctx, struct{}{}); err != nil {
-		c.logger.Error("delete role", zap.Any("request", idParam))
+		c.logger.ErrorCtx(ctx.Context(), "delete role", zap.Any("request", idParam))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
@@ -341,21 +341,21 @@ func (c *Controller) DeleteRolesByIds(ctx *fiber.Ctx) error {
 	// анмаршалим JSON body запроса в структуру DeleteByIdsRequest
 	var request DeleteByIdsRequest
 	if err := ctx.BodyParser(&request); err != nil {
-		c.logger.Error("delete roles: received request", zap.Any("request", request))
+		c.logger.ErrorCtx(ctx.Context(), "delete roles: received request", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
-	c.logger.Debug("delete roles by ids", zap.Any("request", request))
+	c.logger.DebugCtx(ctx.Context(), "delete roles by ids", zap.Any("request", request))
 
 	// вызываем метод DeleteByIds сервиса role.Service
 	err = c.roleService.DeleteByIds(ctx.Context(), request.Ids)
 	if err != nil {
-		c.logger.Error("delete roles", zap.Any("request", request))
+		c.logger.ErrorCtx(ctx.Context(), "delete roles", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, struct{}{}); err != nil {
-		c.logger.Error("delete roles", zap.Any("request", request))
+		c.logger.ErrorCtx(ctx.Context(), "delete roles", zap.Any("request", request))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
