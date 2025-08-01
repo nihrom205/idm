@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/web"
 	"go.uber.org/zap"
+	"slices"
 	"strconv"
 )
 
@@ -52,12 +54,24 @@ func (c *Controller) RegisterRoutes() {
 // @Tags employee
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param request body employee.CreateRequest true "name employee"
 // @Success 200 {object} common.Response[int64]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /employees [post]
 func (c *Controller) CreateEmployee(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// анмаршалим JSON body запроса в структуру CreateRequest
 	var request CreateRequest
@@ -99,12 +113,26 @@ func (c *Controller) CreateEmployee(ctx *fiber.Ctx) error {
 // @Tags employee
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int64 true "id employee"
 // @Success 200 {object} common.Response[employee.Response]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
+// @Failure 404 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /employees/{id} [get]
 func (c *Controller) GetEmployee(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) &&
+		!slices.Contains(claims.RealmAccess.Roles, web.IdmUser) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -146,11 +174,24 @@ func (c *Controller) GetEmployee(ctx *fiber.Ctx) error {
 // @Tags employee
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Success 200 {object} common.Response[employee.Response]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /employees [get]
 func (c *Controller) GetAllEmployees(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) &&
+		!slices.Contains(claims.RealmAccess.Roles, web.IdmUser) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// вызываем метод GetAll сервиса employee.Service
 	response, err := c.employeeService.GetAll(ctx.Context())
@@ -174,12 +215,25 @@ func (c *Controller) GetAllEmployees(ctx *fiber.Ctx) error {
 // @Tags employee
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param ids body employee.FindByIdsRequest true "ids employee"
 // @Success 200 {object} common.Response[employee.Response]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /employees/ids [post]
 func (c *Controller) GetEmployeeByIds(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) &&
+		slices.Contains(claims.RealmAccess.Roles, web.IdmUser) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// анмаршалим JSON body запроса в структуру FindByIdsRequest
 	var request FindByIdsRequest
@@ -211,12 +265,24 @@ func (c *Controller) GetEmployeeByIds(ctx *fiber.Ctx) error {
 // @Tags employee
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param id path int64 true "id employee"
 // @Success 200 {object} common.Response[int64]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /employees/{id} [delete]
 func (c *Controller) DeleteEmployee(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
@@ -256,12 +322,24 @@ func (c *Controller) DeleteEmployee(ctx *fiber.Ctx) error {
 // @Tags employee
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param ids body employee.DeleteByIdsRequest true "ids employee"
 // @Success 200 {object} common.Response[int64]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /employees/ids [delete]
 func (c *Controller) DeleteEmployeesByIds(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	// анмаршалим JSON body запроса в структуру DeleteByIdsRequest
 	var request DeleteByIdsRequest
@@ -272,7 +350,7 @@ func (c *Controller) DeleteEmployeesByIds(ctx *fiber.Ctx) error {
 	c.logger.Debug("delete employees by ids", zap.Any("request", request))
 
 	// вызываем метод DeleteByIds сервиса employee.Service
-	err := c.employeeService.DeleteByIds(ctx.Context(), request.Ids)
+	err = c.employeeService.DeleteByIds(ctx.Context(), request.Ids)
 	if err != nil {
 		c.logger.Error("delete employees by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
@@ -294,14 +372,27 @@ func (c *Controller) DeleteEmployeesByIds(ctx *fiber.Ctx) error {
 // @Tags employee
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param pageNumber query integer false "Number page (start with 0)"
 // @Param pageSize query integer false "Size page (default 1)"
 // @Param textFilter query string false "Size page (default 1)"
 // @Success 200 {object} common.Response[employee.Response]
 // @Failure 400 {object} common.Response[string]
+// @Failure 401 {object} common.Response[string]
+// @Failure 403 {object} common.Response[string]
 // @Failure 500 {object} common.Response[string]
 // @Router /employees/page [get]
 func (c *Controller) GetPageEmployee(ctx *fiber.Ctx) error {
+
+	// проверяем наличие нужной роли в токене
+	claims, err := getClaims(ctx)
+	if err != nil {
+		return common.ErrResponse(ctx, fiber.StatusUnauthorized, err.Error())
+	}
+	if !slices.Contains(claims.RealmAccess.Roles, web.IdmAdmin) &&
+		!slices.Contains(claims.RealmAccess.Roles, web.IdmUser) {
+		return common.ErrResponse(ctx, fiber.StatusForbidden, "Permission denied")
+	}
 
 	pageNumber, err := strconv.Atoi(ctx.Query("pageNumber", "0"))
 	if err != nil {
@@ -334,4 +425,16 @@ func (c *Controller) GetPageEmployee(ctx *fiber.Ctx) error {
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
+}
+
+func getClaims(ctx *fiber.Ctx) (*web.IdmClaims, error) {
+	token, ok := ctx.Locals(web.JwtKey).(*jwt.Token)
+	if !ok || token == nil {
+		return nil, errors.New("missing or invalid token")
+	}
+	claims, ok := token.Claims.(*web.IdmClaims)
+	if !ok || claims == nil {
+		return nil, errors.New("missing or invalid claims")
+	}
+	return claims, nil
 }

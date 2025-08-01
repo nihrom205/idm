@@ -3,6 +3,7 @@ package tests
 import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jmoiron/sqlx"
 	"github.com/nihrom205/idm/inner/common"
 	"github.com/nihrom205/idm/inner/common/validator"
@@ -178,6 +179,18 @@ func initTestApp(db *sqlx.DB) *fiber.App {
 
 	logger := common.NewLogger(cfg)
 
+	// создаём тестовый токен аутентификации с ролью web.IdmAdmin
+	claims := &web.IdmClaims{
+		RealmAccess: web.RealmAccessClaims{
+			Roles: []string{web.IdmAdmin},
+		},
+	}
+	// создаём stub middleware для аутентификации
+	auth := func(c *fiber.Ctx) error {
+		c.Locals(web.JwtKey, &jwt.Token{Claims: claims})
+		return c.Next()
+	}
+
 	// Валидатор
 	vld := validator.NewValidator()
 
@@ -187,6 +200,7 @@ func initTestApp(db *sqlx.DB) *fiber.App {
 
 	// Создаем сервер и контроллер
 	server := web.NewServer()
+	server.GroupApi.Use(auth)
 	employeeController := employee.NewController(server, employeeService, logger)
 	employeeController.RegisterRoutes()
 

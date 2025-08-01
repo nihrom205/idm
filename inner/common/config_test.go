@@ -52,6 +52,10 @@ func TestGetConfigWhenNotFoundEnvReturnEnvironmentVariable(t *testing.T) {
 	if err != nil {
 		return
 	}
+	err = os.Setenv("KEYCLOAK_JWK_URL", "keycloak_url")
+	if err != nil {
+		return
+	}
 	defer func() {
 		err := os.Unsetenv(db_dsn)
 		if err != nil {

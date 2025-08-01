@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/employees": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get all employee.",
                 "consumes": [
                     "application/json"
@@ -42,6 +47,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -51,6 +68,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new employee.",
                 "consumes": [
                     "application/json"
@@ -87,6 +109,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -98,6 +132,11 @@ const docTemplate = `{
         },
         "/employees/ids": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get employee by id.",
                 "consumes": [
                     "application/json"
@@ -134,6 +173,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -143,6 +194,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete employee by list ids.",
                 "consumes": [
                     "application/json"
@@ -179,6 +235,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -190,6 +258,11 @@ const docTemplate = `{
         },
         "/employees/page": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get employee by pagination.",
                 "consumes": [
                     "application/json"
@@ -235,6 +308,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -246,6 +331,11 @@ const docTemplate = `{
         },
         "/employees/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get employee.",
                 "consumes": [
                     "application/json"
@@ -281,6 +371,24 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -290,6 +398,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete employee by id.",
                 "consumes": [
                     "application/json"
@@ -325,6 +438,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -336,6 +461,11 @@ const docTemplate = `{
         },
         "/role": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new role.",
                 "consumes": [
                     "application/json"
@@ -372,6 +502,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -383,6 +525,11 @@ const docTemplate = `{
         },
         "/role/ids": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete role by list ids.",
                 "consumes": [
                     "application/json"
@@ -419,6 +566,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -430,6 +589,11 @@ const docTemplate = `{
         },
         "/role/{id}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete role by id.",
                 "consumes": [
                     "application/json"
@@ -465,6 +629,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -476,6 +652,11 @@ const docTemplate = `{
         },
         "/roles": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get all role.",
                 "consumes": [
                     "application/json"
@@ -501,6 +682,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -512,6 +705,11 @@ const docTemplate = `{
         },
         "/roles/ids": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get role by id.",
                 "consumes": [
                     "application/json"
@@ -548,6 +746,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -559,6 +769,11 @@ const docTemplate = `{
         },
         "/roles/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get role.",
                 "consumes": [
                     "application/json"
@@ -590,6 +805,18 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/github_com_nihrom205_idm_inner_common.Response-string"
                         }
@@ -781,17 +1008,24 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
+	Version:          "0.0.1",
+	Host:             "localhost:8080",
 	BasePath:         "/api/v1/",
 	Schemes:          []string{},
 	Title:            "IDM API documentation",
-	Description:      "",
+	Description:      "Swagger UI на Fiber",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
