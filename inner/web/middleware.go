@@ -9,7 +9,6 @@ import (
 
 func registerMiddleware(app *fiber.App) {
 	app.Use(recover.New())
-	//app.Use(requestid.New())
 	app.Use(func(c *fiber.Ctx) error {
 		requestID := c.Get("X-Request-ID")
 		if requestID == "" {

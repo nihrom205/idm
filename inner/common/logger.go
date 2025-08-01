@@ -1,11 +1,16 @@
 package common
 
 import (
+	"context"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
+
+// ключ для получения requestId из контекста
+var ridKey = requestid.ConfigDefault.ContextKey.(string)
 
 // Logger структура логгера
 type Logger struct {
@@ -54,10 +59,10 @@ func NewLogger(cfg Config) *Logger {
 
 // setNewFiberZapLogger устанавливает логгер для fiber
 func (l *Logger) setNewFiberZapLogger() {
-	fiberzapLogger := fiberzap.NewLogger(fiberzap.LoggerConfig{
+	fiberZapLogger := fiberzap.NewLogger(fiberzap.LoggerConfig{
 		SetLogger: l.Logger,
 	})
-	log.SetLogger(fiberzapLogger)
+	log.SetLogger(fiberZapLogger)
 }
 
 // parseLogLevel парсит уровень логирования из строки в zapcore.Level
@@ -78,4 +83,34 @@ func parseLogLevel(level string) zapcore.Level {
 	default:
 		return zapcore.InfoLevel
 	}
+}
+
+// функция логирования с добавлением requestId
+func (l *Logger) DebugCtx(ctx context.Context, msg string, fields ...zap.Field) {
+	// получаем requestId из контекста
+	var rid string
+	if v := ctx.Value(ridKey); v != nil {
+		rid = v.(string)
+	}
+	// логируем
+	l.Debug(msg, append(fields, zap.String("requestid", rid))...)
+	// добавляем для логирования поле с requestId
+	fields = append(fields, zap.String(ridKey, rid))
+	// вызываем метод логгера
+	l.Debug(msg, fields...)
+}
+
+// функция логирования с добавлением requestId
+func (l *Logger) ErrorCtx(ctx context.Context, msg string, fields ...zap.Field) {
+	// получаем requestId из контекста
+	var rid string
+	if v := ctx.Value(ridKey); v != nil {
+		rid = v.(string)
+	}
+	// логируем
+	l.Error(msg, append(fields, zap.String("requestid", rid))...)
+	// добавляем для логирования поле с requestId
+	fields = append(fields, zap.String(ridKey, rid))
+	// вызываем метод логгера
+	l.Error(msg, fields...)
 }

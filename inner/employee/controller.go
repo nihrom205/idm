@@ -80,11 +80,11 @@ func (c *Controller) CreateEmployee(ctx *fiber.Ctx) error {
 	}
 
 	// логируем тело запроса
-	c.logger.Debug("create employee: received request", zap.Any("request", request))
+	c.logger.DebugCtx(ctx.Context(), "create employee: received request", zap.Any("request", request))
 	// вызываем метод Create сервиса employee.Service
 	newEmployeeId, err := c.employeeService.Create(ctx.Context(), request)
 	if err != nil {
-		c.logger.Error("create employee", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "create employee", zap.Error(err))
 		switch {
 		// если сервис возвращает ошибку RequestValidationError или AlreadyExistsError,
 		// то мы возвращаем ответ с кодом 400 (BadRequest)
@@ -99,7 +99,7 @@ func (c *Controller) CreateEmployee(ctx *fiber.Ctx) error {
 
 	// функция OkResponse() формирует и направляет ответ в случае успеха
 	if err = common.OkResponse(ctx, newEmployeeId); err != nil {
-		c.logger.Error("create employee", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "create employee", zap.Error(err))
 		_ = common.ErrResponse(ctx, fiber.StatusInternalServerError, "error returning created employee id")
 		return err
 	}
@@ -136,17 +136,17 @@ func (c *Controller) GetEmployee(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
-	c.logger.Debug("get employee", zap.String("id", idParam))
+	c.logger.DebugCtx(ctx.Context(), "get employee", zap.String("id", idParam))
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		c.logger.Error("get employee", zap.String("id", idParam), zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "get employee", zap.String("id", idParam), zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid employee id")
 	}
 
 	// вызываем метод FindById сервиса employee.Service
 	response, err := c.employeeService.FindById(ctx.Context(), id)
 	if err != nil {
-		c.logger.Error("get employee", zap.String("id", idParam), zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "get employee", zap.String("id", idParam), zap.Error(err))
 		switch {
 		case errors.As(err, &common.RequestValidatorError{}):
 			return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
@@ -161,7 +161,7 @@ func (c *Controller) GetEmployee(ctx *fiber.Ctx) error {
 
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, response); err != nil {
-		c.logger.Error("get employee", zap.String("id", idParam), zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "get employee", zap.String("id", idParam), zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
@@ -196,13 +196,13 @@ func (c *Controller) GetAllEmployees(ctx *fiber.Ctx) error {
 	// вызываем метод GetAll сервиса employee.Service
 	response, err := c.employeeService.GetAll(ctx.Context())
 	if err != nil {
-		c.logger.Error("get all employees", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "get all employees", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, response); err != nil {
-		c.logger.Error("get all employees", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "get all employees", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
@@ -238,21 +238,21 @@ func (c *Controller) GetEmployeeByIds(ctx *fiber.Ctx) error {
 	// анмаршалим JSON body запроса в структуру FindByIdsRequest
 	var request FindByIdsRequest
 	if err := ctx.BodyParser(&request); err != nil {
-		c.logger.Error("get employee by ids", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "get employee by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
-	c.logger.Debug("get employee by ids", zap.Any("request", request))
+	c.logger.DebugCtx(ctx.Context(), "get employee by ids", zap.Any("request", request))
 
 	// вызываем метод FindByIds сервиса employee.Service
 	response, err := c.employeeService.FindByIds(ctx.Context(), request.Ids)
 	if err != nil {
-		c.logger.Error("get employee by ids", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "get employee by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, response); err != nil {
-		c.logger.Error("get employee by ids", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "get employee by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
@@ -286,17 +286,17 @@ func (c *Controller) DeleteEmployee(ctx *fiber.Ctx) error {
 
 	// получаем ID из параметра маршрута
 	idParam := ctx.Params("id")
-	c.logger.Debug("delete employee", zap.String("id", idParam))
+	c.logger.DebugCtx(ctx.Context(), "delete employee", zap.String("id", idParam))
 	id, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
-		c.logger.Error("delete employee", zap.String("id", idParam), zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "delete employee", zap.String("id", idParam), zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, "invalid employee id")
 	}
 
 	// вызываем метод DeleteById сервиса employee.Service
 	err = c.employeeService.DeleteById(ctx.Context(), id)
 	if err != nil {
-		c.logger.Error("delete employee", zap.String("id", idParam), zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "delete employee", zap.String("id", idParam), zap.Error(err))
 		switch {
 		case errors.As(err, &common.RequestValidatorError{}):
 			return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
@@ -309,7 +309,7 @@ func (c *Controller) DeleteEmployee(ctx *fiber.Ctx) error {
 		}
 	}
 	if err := common.OkResponse(ctx, struct{}{}); err != nil {
-		c.logger.Error("delete employee", zap.String("id", idParam), zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "delete employee", zap.String("id", idParam), zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
@@ -344,21 +344,21 @@ func (c *Controller) DeleteEmployeesByIds(ctx *fiber.Ctx) error {
 	// анмаршалим JSON body запроса в структуру DeleteByIdsRequest
 	var request DeleteByIdsRequest
 	if err := ctx.BodyParser(&request); err != nil {
-		c.logger.Error("delete employees by ids", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "delete employees by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusBadRequest, err.Error())
 	}
-	c.logger.Debug("delete employees by ids", zap.Any("request", request))
+	c.logger.DebugCtx(ctx.Context(), "delete employees by ids", zap.Any("request", request))
 
 	// вызываем метод DeleteByIds сервиса employee.Service
 	err = c.employeeService.DeleteByIds(ctx.Context(), request.Ids)
 	if err != nil {
-		c.logger.Error("delete employees by ids", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "delete employees by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, struct{}{}); err != nil {
-		c.logger.Error("delete employees by ids", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "delete employees by ids", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
@@ -412,7 +412,7 @@ func (c *Controller) GetPageEmployee(ctx *fiber.Ctx) error {
 		PageNumber: pageNumber,
 		TextFilter: textFilter,
 	}
-	c.logger.Debug("get page employee by pageNumber and pageSize", zap.Any("request", request))
+	c.logger.DebugCtx(ctx.Context(), "get page employee by pageNumber and pageSize", zap.Any("request", request))
 
 	page, err := c.employeeService.FindPage(ctx.Context(), request)
 	if err != nil {
@@ -421,7 +421,7 @@ func (c *Controller) GetPageEmployee(ctx *fiber.Ctx) error {
 
 	// возвращаем успешный ответ
 	if err := common.OkResponse(ctx, page); err != nil {
-		c.logger.Error("get page employee by pageNumber and pageSize", zap.Error(err))
+		c.logger.ErrorCtx(ctx.Context(), "get page employee by pageNumber and pageSize", zap.Error(err))
 		return common.ErrResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 	return nil
